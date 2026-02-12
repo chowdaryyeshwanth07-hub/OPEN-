@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { geminiService } from '../services/geminiService';
-import { libraryService } from '../services/libraryService';
+import { geminiService } from '../services/geminiService.ts';
+import { libraryService } from '../services/libraryService.ts';
 
 const LibrarianChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);

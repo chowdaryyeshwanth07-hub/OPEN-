@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { libraryService } from '../services/libraryService';
-import { Book, SortOption } from '../types';
-import { CATEGORIES } from '../constants';
-import BookCard from '../components/BookCard';
+import { libraryService } from '../services/libraryService.ts';
+import { Book, SortOption } from '../types.ts';
+import { CATEGORIES } from '../constants.tsx';
+import BookCard from '../components/BookCard.tsx';
 
 const Browse: React.FC = () => {
   const location = useLocation();
@@ -39,8 +39,13 @@ const Browse: React.FC = () => {
                 onChange={(e) => setKeyword(e.target.value)}
                 className="w-full pl-11 pr-4 py-4 bg-[#1F1511] border border-[#3A2A23] text-[#F5EFEA] rounded-2xl focus:ring-2 focus:ring-[#E6B18A] focus:border-transparent transition-all placeholder:text-[#8C7A6B]"
               />
-              <svg className="absolute left-4 top-4.5 w-5 h-5 text-[#8C7A6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg 
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8C7A6B]" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M16.667 10.333a6.333 6.333 0 11-12.667 0 6.333 6.333 0 0112.667 0z" />
               </svg>
             </div>
           </div>

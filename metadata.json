@@ -1,0 +1,8 @@
+{
+  "name": "Open Shelf Library",
+  "description": "A feature-rich E-Library MVP with AI-powered book summaries, intelligent search, and a full administrative dashboard.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
-import { libraryService } from '../services/libraryService.ts';
-import { Book } from '../types.ts';
-import BookCard from '../components/BookCard.tsx';
+import { libraryService } from '../services/libraryService';
+import { Book } from '../types';
+import BookCard from '../components/BookCard';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Home: React.FC = () => {

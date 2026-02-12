@@ -1,6 +1,6 @@
 
-import { Book, SortOption } from '../types.ts';
-import { INITIAL_BOOKS } from '../constants.tsx';
+import { Book, SortOption } from '../types';
+import { INITIAL_BOOKS } from '../constants';
 
 const STORAGE_KEY = 'openshelf_data';
 

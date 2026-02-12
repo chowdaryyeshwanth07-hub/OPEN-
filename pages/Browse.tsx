@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { libraryService } from '../services/libraryService.ts';
-import { Book, SortOption } from '../types.ts';
-import { CATEGORIES } from '../constants.tsx';
-import BookCard from '../components/BookCard.tsx';
+import { libraryService } from '../services/libraryService';
+import { Book, SortOption } from '../types';
+import { CATEGORIES } from '../constants';
+import BookCard from '../components/BookCard';
 
 const Browse: React.FC = () => {
   const location = useLocation();

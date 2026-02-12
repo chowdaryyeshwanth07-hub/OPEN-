@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService.ts';
+import { authService } from '../services/authService';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -10,7 +10,6 @@ const Login: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple mock validation
     if (username.trim()) {
       authService.login(username);
       window.dispatchEvent(new Event('authChange'));

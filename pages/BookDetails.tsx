@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { libraryService } from '../services/libraryService.ts';
-import { geminiService } from '../services/geminiService.ts';
-import { Book } from '../types.ts';
+import { libraryService } from '../services/libraryService';
+import { geminiService } from '../services/geminiService';
+import { Book } from '../types';
 
 const BookDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();

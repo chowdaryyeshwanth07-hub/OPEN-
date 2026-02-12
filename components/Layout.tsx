@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService.ts';
+import { authService } from '../services/authService';
 
 const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => {
   const location = useLocation();
@@ -29,7 +29,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     const handleAuth = () => setIsAuthenticated(authService.isAuthenticated());
     window.addEventListener('authChange', handleAuth);
-    // Periodically check auth for sync across tabs or unexpected changes
     const interval = setInterval(handleAuth, 1000);
     return () => {
       window.removeEventListener('authChange', handleAuth);

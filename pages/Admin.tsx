@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { libraryService } from '../services/libraryService.ts';
-import { geminiService } from '../services/geminiService.ts';
-import { Book } from '../types.ts';
-import { CATEGORIES } from '../constants.tsx';
+import { libraryService } from '../services/libraryService';
+import { geminiService } from '../services/geminiService';
+import { Book } from '../types';
+import { CATEGORIES } from '../constants';
 
 const Admin: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
@@ -166,7 +166,6 @@ const Admin: React.FC = () => {
                       </svg>
                     </button>
                     <button 
-                      // Fixed: Reference book.id from the loop variable
                       onClick={() => handleDelete(book.id)}
                       className="p-3 text-[#CBB8A9] hover:text-red-400 hover:bg-red-400/5 rounded-xl transition-all"
                     >

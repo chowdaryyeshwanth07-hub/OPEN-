@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout.tsx';
-import Home from './pages/Home.tsx';
-import Browse from './pages/Browse.tsx';
-import BookDetails from './pages/BookDetails.tsx';
-import Admin from './pages/Admin.tsx';
-import Login from './pages/Login.tsx';
-import LibrarianChat from './components/LibrarianChat.tsx';
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import Browse from './pages/Browse';
+import BookDetails from './pages/BookDetails';
+import Admin from './pages/Admin';
+import Login from './pages/Login';
+import LibrarianChat from './components/LibrarianChat';
 
 const App: React.FC = () => {
   return (

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Book } from '../types.ts';
+import { Book } from '../types';
 
 interface BookCardProps {
   book: Book;

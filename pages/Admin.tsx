@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { libraryService } from '../services/libraryService';
-import { geminiService } from '../services/geminiService';
-import { Book } from '../types';
-import { CATEGORIES } from '../constants';
+import { libraryService } from '../services/libraryService.ts';
+import { geminiService } from '../services/geminiService.ts';
+import { Book } from '../types.ts';
+import { CATEGORIES } from '../constants.tsx';
 
 const Admin: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);

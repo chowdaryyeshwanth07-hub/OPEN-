@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Book } from './types';
+import { Book } from './types.ts';
 
 export const INITIAL_BOOKS: Book[] = [
   {

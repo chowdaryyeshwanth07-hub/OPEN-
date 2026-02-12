@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
+import { authService } from '../services/authService.ts';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');

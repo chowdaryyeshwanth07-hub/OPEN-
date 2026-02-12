@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
+import { authService } from '../services/authService.ts';
 
 const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => {
   const location = useLocation();

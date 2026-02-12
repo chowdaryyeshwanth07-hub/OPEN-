@@ -1,12 +1,14 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Book } from "../types";
+import { Book } from "../types.ts";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Utility to get a fresh AI instance
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const geminiService = {
   async getBookSummary(book: Book): Promise<string> {
     try {
+      const ai = getAI();
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: `Provide an insightful, engaging 3-sentence summary of the book "${book.title}" by ${book.author}. Focus on the main themes and why it's worth reading.`,
@@ -23,6 +25,7 @@ export const geminiService = {
 
   async askLibrarian(question: string, books: Book[]): Promise<string> {
     try {
+      const ai = getAI();
       const catalog = books.map(b => `${b.title} by ${b.author} (${b.categories.join(', ')})`).join('\n');
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -43,6 +46,7 @@ export const geminiService = {
 
   async generateBookDescription(title: string, author: string): Promise<{ description: string; categories: string[]; year: number }> {
     try {
+      const ai = getAI();
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: `Generate a book record for "${title}" by ${author}. 

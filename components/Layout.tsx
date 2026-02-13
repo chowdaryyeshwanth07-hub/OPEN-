@@ -102,12 +102,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             Elevating your reading experience with intelligent cataloging and AI-driven insights. Built for the modern bibliophile.
           </p>
           <div className="flex justify-center space-x-6 mb-8">
-            <a href="#" className="hover:text-[#F5EFEA] transition-colors">Privacy</a>
-            <a href="#" className="hover:text-[#F5EFEA] transition-colors">Terms</a>
+            <Link to="/privacy" className="hover:text-[#F5EFEA] transition-colors">Privacy</Link>
+            <Link to="/terms" className="hover:text-[#F5EFEA] transition-colors">Terms</Link>
             <a href="#" className="hover:text-[#F5EFEA] transition-colors">API</a>
           </div>
           <p className="text-sm text-[#8C7A6B]">
-            &copy; {new Date().getFullYear()} Open Shelf Library MVP. Powered by Google Gemini.
+            &copy; {new Date().getFullYear()} Open Shelf Library MVP.
           </p>
         </div>
       </footer>

@@ -7,6 +7,8 @@ import Browse from './pages/Browse.tsx';
 import BookDetails from './pages/BookDetails.tsx';
 import Admin from './pages/Admin.tsx';
 import Login from './pages/Login.tsx';
+import Privacy from './pages/Privacy.tsx';
+import Terms from './pages/Terms.tsx';
 import LibrarianChat from './components/LibrarianChat.tsx';
 
 const App: React.FC = () => {
@@ -19,6 +21,8 @@ const App: React.FC = () => {
           <Route path="/book/:id" element={<BookDetails />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
         </Routes>
       </Layout>
       <LibrarianChat />

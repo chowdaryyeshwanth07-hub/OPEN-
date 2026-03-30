@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LogOut, Menu, X, BookOpen } from 'lucide-react';
 import { authService } from '../services/authService.ts';
 
 const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => {
@@ -77,9 +78,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 className="p-2 text-[#8C7A6B] hover:text-red-400 hover:bg-red-400/5 rounded-xl transition-all flex items-center group"
                 title="Logout"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
+                <LogOut className="w-6 h-6" />
                 <span className="ml-2 hidden lg:inline font-bold text-xs uppercase tracking-widest">Logout</span>
               </button>
             )}
@@ -107,13 +106,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 text-[#CBB8A9] hover:text-[#F5EFEA] transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isMobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-              )}
-            </svg>
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </nav>
 

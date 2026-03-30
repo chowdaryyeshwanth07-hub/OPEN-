@@ -71,7 +71,7 @@ service cloud.firestore {
              data.description is string && data.description.size() > 0 && data.description.size() <= 5000 &&
              data.categories is list && data.categories.size() <= 10 &&
              (!('coverImageUrl' in data) || (data.coverImageUrl is string && data.coverImageUrl.size() <= 1000)) &&
-             (!('publishedYear' in data) || (data.publishedYear is int && data.publishedYear > 0)) &&
+             (!('publishedYear' in data) || (data.publishedYear is int)) &&
              data.createdAt is timestamp;
     }
 

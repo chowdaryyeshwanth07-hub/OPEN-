@@ -137,18 +137,38 @@ const Admin: React.FC = () => {
     }
     
     setIsLoading(true);
+    let successCount = 0;
+    let failCount = 0;
+    
     try {
       const { SAMPLE_100_BOOKS } = await import('../sampleBooks.ts');
+      console.log(`Starting seeding of ${SAMPLE_100_BOOKS.length} books...`);
+      
       for (const book of SAMPLE_100_BOOKS) {
-        // @ts-ignore - bookData might have extra fields but addBook handles it
-        const { id, createdAt, ...bookData } = book as any;
-        await libraryService.addBook(bookData);
+        try {
+          // @ts-ignore - bookData might have extra fields but addBook handles it
+          const { id, createdAt, ...bookData } = book as any;
+          await libraryService.addBook(bookData);
+          successCount++;
+          if (successCount % 10 === 0) {
+            console.log(`Seeded ${successCount} books...`);
+          }
+        } catch (err) {
+          console.error(`Failed to seed book: ${book.title}`, err);
+          failCount++;
+        }
       }
+      
       await refreshBooks();
-      alert('Database seeded with 100 books successfully!');
+      
+      if (failCount === 0) {
+        alert(`Database seeded with ${successCount} books successfully!`);
+      } else {
+        alert(`Seeding complete. Success: ${successCount}, Failed: ${failCount}. Check console for details.`);
+      }
     } catch (error) {
+      console.error('Critical seeding error:', error);
       alert('Seeding failed. Check console for details.');
-      console.error(error);
     } finally {
       setIsLoading(false);
     }

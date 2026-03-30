@@ -4,6 +4,7 @@ import { supabase } from '../supabase.ts';
 
 export const libraryService = {
   getAllBooks: async (): Promise<Book[]> => {
+    if (!supabase) return [];
     const { data, error } = await supabase
       .from('poems') // Using 'poems' as requested by the user
       .select('*')
@@ -17,6 +18,7 @@ export const libraryService = {
   },
 
   getBook: async (id: number): Promise<Book | undefined> => {
+    if (!supabase) return undefined;
     const { data, error } = await supabase
       .from('poems')
       .select('*')
@@ -31,6 +33,7 @@ export const libraryService = {
   },
 
   addBook: async (book: Omit<Book, 'id' | 'createdAt'>): Promise<Book | null> => {
+    if (!supabase) return null;
     const newBook = {
       ...book,
       createdAt: new Date().toISOString()
@@ -50,6 +53,7 @@ export const libraryService = {
   },
 
   updateBook: async (id: number, updated: Partial<Book>): Promise<boolean> => {
+    if (!supabase) return false;
     const { error } = await supabase
       .from('poems')
       .update(updated)
@@ -63,6 +67,7 @@ export const libraryService = {
   },
 
   deleteBook: async (id: number): Promise<boolean> => {
+    if (!supabase) return false;
     const { error } = await supabase
       .from('poems')
       .delete()
@@ -76,6 +81,7 @@ export const libraryService = {
   },
 
   searchAndFilter: async (keyword: string, category: string, sort: SortOption): Promise<Book[]> => {
+    if (!supabase) return [];
     let query = supabase.from('poems').select('*');
 
     if (keyword) {

@@ -22,24 +22,29 @@ const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, chil
 };
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const handleAuth = () => setIsAuthenticated(authService.isAuthenticated());
-    window.addEventListener('authChange', handleAuth);
-    const interval = setInterval(handleAuth, 1000);
+    const checkAuth = async () => {
+      const authStatus = await authService.isAuthenticated();
+      setIsAuthenticated(authStatus);
+    };
+    
+    checkAuth();
+
+    const { data: { subscription } } = authService.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
     return () => {
-      window.removeEventListener('authChange', handleAuth);
-      clearInterval(interval);
+      subscription.unsubscribe();
     };
   }, []);
 
-  const handleLogout = () => {
-    authService.logout();
-    setIsAuthenticated(false);
-    window.dispatchEvent(new Event('authChange'));
+  const handleLogout = async () => {
+    await authService.logout();
     navigate('/login');
   };
 

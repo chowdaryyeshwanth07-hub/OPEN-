@@ -27,7 +27,7 @@ const LibrarianChat: React.FC = () => {
     setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setIsLoading(true);
 
-    const books = libraryService.getAllBooks();
+    const books = await libraryService.getAllBooks();
     const response = await geminiService.askLibrarian(userText, books);
     
     setMessages(prev => [...prev, { role: 'bot', text: response }]);

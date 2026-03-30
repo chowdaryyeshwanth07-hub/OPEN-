@@ -1,19 +1,41 @@
 
-const AUTH_KEY = 'openshelf_auth';
+import { supabase } from '../supabase.ts';
 
 export const authService = {
-  login: (username: string) => {
-    localStorage.setItem(AUTH_KEY, JSON.stringify({ username, isLoggedIn: true }));
+  login: async (email: string, password?: string) => {
+    // For demo purposes, we'll use a simple login if password is not provided
+    // but in a real app, you'd use supabase.auth.signInWithPassword
+    if (password) {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return data;
+    } else {
+      // Fallback for simple email-only login (OTP or just mock)
+      const { data, error } = await supabase.auth.signInWithOtp({ email });
+      if (error) throw error;
+      return data;
+    }
   },
-  logout: () => {
-    localStorage.removeItem(AUTH_KEY);
+  signUp: async (email: string, password?: string) => {
+    if (password) {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      return data;
+    }
   },
-  isAuthenticated: (): boolean => {
-    const data = localStorage.getItem(AUTH_KEY);
-    return !!data && JSON.parse(data).isLoggedIn;
+  logout: async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   },
-  getUser: () => {
-    const data = localStorage.getItem(AUTH_KEY);
-    return data ? JSON.parse(data) : null;
+  isAuthenticated: async (): Promise<boolean> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
+  },
+  getUser: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  },
+  onAuthStateChange: (callback: (event: string, session: any) => void) => {
+    return supabase.auth.onAuthStateChange(callback);
   }
 };

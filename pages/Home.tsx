@@ -11,9 +11,16 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const all = libraryService.getAllBooks();
-    const sorted = [...all].sort((a, b) => b.createdAt - a.createdAt).slice(0, 6);
-    setFeaturedBooks(sorted);
+    const fetchFeatured = async () => {
+      const all = await libraryService.getAllBooks();
+      const sorted = [...all].sort((a, b) => {
+        const dateA = typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() : a.createdAt;
+        const dateB = typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() : b.createdAt;
+        return dateB - dateA;
+      }).slice(0, 6);
+      setFeaturedBooks(sorted);
+    };
+    fetchFeatured();
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {

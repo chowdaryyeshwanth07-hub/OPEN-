@@ -7,7 +7,7 @@ export interface Book {
   categories: string[];
   coverImageUrl?: string;
   publishedYear?: number;
-  createdAt: number;
+  createdAt: number | string;
 }
 
 export enum SortOption {

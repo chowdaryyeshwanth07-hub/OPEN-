@@ -13,10 +13,13 @@ const BookDetails: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      const found = libraryService.getBook(Number(id));
-      if (found) {
-        setBook(found);
-      }
+      const fetchBook = async () => {
+        const found = await libraryService.getBook(Number(id));
+        if (found) {
+          setBook(found);
+        }
+      };
+      fetchBook();
     }
   }, [id]);
 

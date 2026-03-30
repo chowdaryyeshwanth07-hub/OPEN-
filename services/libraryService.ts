@@ -1,92 +1,112 @@
 
 import { Book, SortOption } from '../types.ts';
-import { INITIAL_BOOKS } from '../constants.tsx';
-
-const STORAGE_KEY = 'openshelf_data';
+import { supabase } from '../supabase.ts';
 
 export const libraryService = {
-  getStore: () => {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) {
-      const initial = { books: INITIAL_BOOKS, nextId: INITIAL_BOOKS.length + 1 };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(data);
-  },
-
-  saveStore: (books: Book[], nextId: number) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ books, nextId }));
-  },
-
-  getAllBooks: (): Book[] => {
-    return libraryService.getStore().books;
-  },
-
-  getBook: (id: number): Book | undefined => {
-    return libraryService.getStore().books.find((b: Book) => b.id === id);
-  },
-
-  addBook: (book: Omit<Book, 'id' | 'createdAt'>): Book => {
-    const { books, nextId } = libraryService.getStore();
-    const newBook: Book = {
-      ...book,
-      id: nextId,
-      createdAt: Date.now()
-    };
-    libraryService.saveStore([...books, newBook], nextId + 1);
-    return newBook;
-  },
-
-  updateBook: (id: number, updated: Partial<Book>): boolean => {
-    const { books, nextId } = libraryService.getStore();
-    const index = books.findIndex((b: Book) => b.id === id);
-    if (index === -1) return false;
+  getAllBooks: async (): Promise<Book[]> => {
+    const { data, error } = await supabase
+      .from('poems') // Using 'poems' as requested by the user
+      .select('*')
+      .order('createdAt', { ascending: false });
     
-    books[index] = { ...books[index], ...updated };
-    libraryService.saveStore(books, nextId);
+    if (error) {
+      console.error('Error fetching poems:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  getBook: async (id: number): Promise<Book | undefined> => {
+    const { data, error } = await supabase
+      .from('poems')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching poem:', error);
+      return undefined;
+    }
+    return data;
+  },
+
+  addBook: async (book: Omit<Book, 'id' | 'createdAt'>): Promise<Book | null> => {
+    const newBook = {
+      ...book,
+      createdAt: new Date().toISOString()
+    };
+    
+    const { data, error } = await supabase
+      .from('poems')
+      .insert([newBook])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error adding poem:', error);
+      return null;
+    }
+    return data;
+  },
+
+  updateBook: async (id: number, updated: Partial<Book>): Promise<boolean> => {
+    const { error } = await supabase
+      .from('poems')
+      .update(updated)
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error updating poem:', error);
+      return false;
+    }
     return true;
   },
 
-  deleteBook: (id: number): boolean => {
-    const { books, nextId } = libraryService.getStore();
-    const filtered = books.filter((b: Book) => b.id !== id);
-    if (filtered.length === books.length) return false;
-    libraryService.saveStore(filtered, nextId);
+  deleteBook: async (id: number): Promise<boolean> => {
+    const { error } = await supabase
+      .from('poems')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting poem:', error);
+      return false;
+    }
     return true;
   },
 
-  searchAndFilter: (keyword: string, category: string, sort: SortOption): Book[] => {
-    let books = libraryService.getAllBooks();
+  searchAndFilter: async (keyword: string, category: string, sort: SortOption): Promise<Book[]> => {
+    let query = supabase.from('poems').select('*');
 
     if (keyword) {
       const lower = keyword.toLowerCase();
-      books = books.filter(b => 
-        b.title.toLowerCase().includes(lower) || 
-        b.author.toLowerCase().includes(lower) ||
-        b.description.toLowerCase().includes(lower)
-      );
+      query = query.or(`title.ilike.%${lower}%,author.ilike.%${lower}%,description.ilike.%${lower}%`);
     }
 
     if (category && category !== 'All') {
-      books = books.filter(b => b.categories.includes(category));
+      query = query.contains('categories', [category]);
     }
 
     switch (sort) {
       case SortOption.NEWEST:
-        books.sort((a, b) => b.createdAt - a.createdAt);
+        query = query.order('createdAt', { ascending: false });
         break;
       case SortOption.OLDEST:
-        books.sort((a, b) => a.createdAt - b.createdAt);
+        query = query.order('createdAt', { ascending: true });
         break;
       case SortOption.TITLE_ASC:
-        books.sort((a, b) => a.title.localeCompare(b.title));
+        query = query.order('title', { ascending: true });
         break;
       case SortOption.TITLE_DESC:
-        books.sort((a, b) => b.title.localeCompare(a.title));
+        query = query.order('title', { ascending: false });
         break;
     }
 
-    return books;
+    const { data, error } = await query;
+    if (error) {
+      console.error('Error searching poems:', error);
+      return [];
+    }
+    return data || [];
   }
 };

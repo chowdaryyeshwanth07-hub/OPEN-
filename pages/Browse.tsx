@@ -14,8 +14,11 @@ const Browse: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<SortOption>(SortOption.NEWEST);
 
   useEffect(() => {
-    const filtered = libraryService.searchAndFilter(keyword, selectedCategory, sortOrder);
-    setBooks(filtered);
+    const fetchBooks = async () => {
+      const filtered = await libraryService.searchAndFilter(keyword, selectedCategory, sortOrder);
+      setBooks(filtered);
+    };
+    fetchBooks();
   }, [keyword, selectedCategory, sortOrder]);
 
   return (

@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { libraryService } from '../services/libraryService.ts';
+import { authService } from '../services/authService.ts';
 import { geminiService } from '../services/geminiService.ts';
 import { Book } from '../types.ts';
 import { CATEGORIES } from '../constants.tsx';
@@ -10,6 +12,8 @@ const Admin: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -21,12 +25,30 @@ const Admin: React.FC = () => {
   });
 
   useEffect(() => {
-    refreshBooks();
-  }, []);
+    const checkAuth = async () => {
+      const authenticated = await authService.isAuthenticated();
+      if (!authenticated) {
+        navigate('/login');
+      } else {
+        setIsCheckingAuth(false);
+        refreshBooks();
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
-  const refreshBooks = () => {
-    setBooks(libraryService.getAllBooks());
+  const refreshBooks = async () => {
+    const allBooks = await libraryService.getAllBooks();
+    setBooks(allBooks);
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#E6B18A] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   const openAddModal = () => {
     setEditingId(null);
@@ -54,19 +76,19 @@ const Admin: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this book?')) {
-      libraryService.deleteBook(id);
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this book?')) {
+      await libraryService.deleteBook(id);
       refreshBooks();
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      libraryService.updateBook(editingId, formData);
+      await libraryService.updateBook(editingId, formData);
     } else {
-      libraryService.addBook(formData);
+      await libraryService.addBook(formData);
     }
     setIsModalOpen(false);
     refreshBooks();

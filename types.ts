@@ -1,4 +1,14 @@
 
+export type UserRole = 'admin' | 'viewer';
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+  createdAt: any;
+}
+
 export interface Book {
   id: string;
   title: string;

@@ -23,6 +23,7 @@ const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, chil
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -30,12 +31,24 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const checkAuth = async () => {
       const authStatus = await authService.isAuthenticated();
       setIsAuthenticated(authStatus);
+      if (authStatus) {
+        const adminStatus = await authService.isAdmin();
+        setIsAdmin(adminStatus);
+      } else {
+        setIsAdmin(false);
+      }
     };
     
     checkAuth();
 
-    const unsubscribe = authService.onAuthStateChange((_event, session) => {
+    const unsubscribe = authService.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session);
+      if (session) {
+        const adminStatus = await authService.isAdmin();
+        setIsAdmin(adminStatus);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => {
@@ -79,7 +92,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="hidden md:flex items-center space-x-2">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/browse">Browse</NavLink>
-            <NavLink to="/admin">Manage</NavLink>
+            {isAdmin && <NavLink to="/admin">Manage</NavLink>}
             {!isAuthenticated && location.pathname !== '/login' && (
               <NavLink to="/login">Login</NavLink>
             )}

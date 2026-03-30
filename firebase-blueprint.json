@@ -1,5 +1,18 @@
 {
   "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Information about a user and their role.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "viewer"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
     "Book": {
       "title": "Book",
       "description": "A book or poem in the library collection.",
@@ -43,6 +56,10 @@
     }
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles with roles."
+    },
     "/poems": {
       "schema": "Book",
       "description": "Collection of books and poems."

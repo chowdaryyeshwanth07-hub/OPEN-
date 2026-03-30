@@ -29,6 +29,13 @@ const Admin: React.FC = () => {
       const authenticated = await authService.isAuthenticated();
       if (!authenticated) {
         navigate('/login');
+        return;
+      }
+      
+      const admin = await authService.isAdmin();
+      if (!admin) {
+        alert('Access Denied: Admin privileges required.');
+        navigate('/');
       } else {
         setIsCheckingAuth(false);
         refreshBooks();

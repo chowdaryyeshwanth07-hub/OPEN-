@@ -20,8 +20,11 @@ service cloud.firestore {
     // Collection: users
     // Document ID: user UID
     // Fields:
-    //   - role: string (required, 'admin' or 'user')
+    //   - uid: string (required, immutable)
     //   - email: string (required, valid email)
+    //   - displayName: string (optional)
+    //   - role: string (required, 'admin' or 'viewer')
+    //   - createdAt: timestamp (required, immutable)
     //
     // ===============================================================
 
@@ -49,6 +52,15 @@ service cloud.firestore {
 
     function hasOnlyAllowedFields(fields) {
       return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'email', 'role', 'createdAt']) &&
+             hasOnlyAllowedFields(['uid', 'email', 'displayName', 'role', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.email == request.auth.token.email &&
+             data.role in ['admin', 'viewer'] &&
+             data.createdAt is timestamp;
     }
 
     function isValidBook(data) {
@@ -87,8 +99,8 @@ service cloud.firestore {
     // Users collection (for roles)
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && request.resource.data.role == 'user';
-      allow update: if isAdmin(); // Only admins can change roles
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'viewer' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
       allow delete: if isAdmin();
     }
 

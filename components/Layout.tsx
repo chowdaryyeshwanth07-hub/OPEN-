@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, X, BookOpen } from 'lucide-react';
+import { LogOut, Menu, X, BookOpen, MessageCircle } from 'lucide-react';
 import { authService } from '../services/authService.ts';
 
 const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => {
@@ -96,6 +96,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="hidden md:flex items-center space-x-2">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/browse">Browse</NavLink>
+            <button 
+              onClick={() => {
+                const event = new CustomEvent('open-librarian-chat');
+                window.dispatchEvent(event);
+              }}
+              className="px-4 py-2 rounded-full transition-all duration-300 font-medium text-[#CBB8A9] hover:text-[#F5EFEA] hover:bg-[#241814] flex items-center space-x-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Chat</span>
+            </button>
             {isAdmin && <NavLink to="/admin">Manage</NavLink>}
             {!isAuthenticated && location.pathname !== '/login' && (
               <NavLink to="/login">Login</NavLink>
@@ -116,6 +126,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <div className="flex flex-col space-y-3">
               <NavLink to="/">Home</NavLink>
               <NavLink to="/browse">Browse</NavLink>
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('open-librarian-chat');
+                  window.dispatchEvent(event);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-4 py-2 rounded-full transition-all duration-300 font-medium text-[#CBB8A9] hover:text-[#F5EFEA] hover:bg-[#241814] flex items-center space-x-2 w-full justify-start"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Chat</span>
+              </button>
               {isAdmin && <NavLink to="/admin">Manage</NavLink>}
               {!isAuthenticated && location.pathname !== '/login' && (
                 <NavLink to="/login">Login</NavLink>

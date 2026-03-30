@@ -13,6 +13,12 @@ const LibrarianChat: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const handleOpenChat = () => setIsOpen(true);
+    window.addEventListener('open-librarian-chat', handleOpenChat);
+    return () => window.removeEventListener('open-librarian-chat', handleOpenChat);
+  }, []);
+
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -35,7 +41,7 @@ const LibrarianChat: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[60]">
+    <div className="fixed bottom-8 right-8 z-[9999]">
       {isOpen ? (
         <div className="w-80 sm:w-96 h-[500px] bg-[#241814] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-[#3A2A23]">
           <div className="bg-gradient-to-r from-[#241814] to-[#1A120E] p-6 text-[#F5EFEA] flex justify-between items-center border-b border-[#3A2A23]">

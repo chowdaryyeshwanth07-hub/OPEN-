@@ -17,6 +17,8 @@ export interface Book {
   categories: string[];
   coverImageUrl?: string;
   publishedYear?: number;
+  viewUrl?: string;
+  downloadUrl?: string;
   createdAt: any;
 }
 

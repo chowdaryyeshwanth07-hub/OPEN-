@@ -57,7 +57,7 @@ const LibrarianChat: React.FC = () => {
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="hover:bg-[#E6B18A]/10 text-[#CBB8A9] rounded-xl p-2 transition-all">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="brown" stroke="white" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -114,7 +114,7 @@ const LibrarianChat: React.FC = () => {
           onClick={() => setIsOpen(true)}
           className="w-16 h-16 bg-gradient-to-br from-[#E6B18A] to-[#D39A70] text-[#1A120E] rounded-[1.5rem] shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 group ring-4 ring-[#E6B18A]/20"
         >
-          <svg className="w-8 h-8 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8 group-hover:rotate-12 transition-transform" fill="none" stroke="white" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
           </svg>
           <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F5EFEA] rounded-full border-4 border-[#1A120E] animate-pulse"></div>

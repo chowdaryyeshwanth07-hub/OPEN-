@@ -44,7 +44,7 @@ export const geminiService = {
     }
   },
 
-  async generateBookDescription(title: string, author: string): Promise<{ description: string; categories: string[]; year: number }> {
+  async generateBookDescription(title: string, author: string): Promise<{ description: string; categories: string[]; year: number; viewUrl?: string; downloadUrl?: string }> {
     try {
       const ai = getAI();
       const response = await ai.models.generateContent({
@@ -53,7 +53,9 @@ export const geminiService = {
         Return a JSON object with: 
         - description: A professional book blurb.
         - categories: Array of 2-3 matching literary categories.
-        - year: The original publication year as a number.`,
+        - year: The original publication year as a number.
+        - viewUrl: A URL where the book can be read online (e.g. Project Gutenberg or similar public domain source).
+        - downloadUrl: A direct download URL for the book if available (e.g. PDF/EPUB from public domain sources).`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -61,7 +63,9 @@ export const geminiService = {
             properties: {
               description: { type: Type.STRING },
               categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-              year: { type: Type.NUMBER }
+              year: { type: Type.NUMBER },
+              viewUrl: { type: Type.STRING },
+              downloadUrl: { type: Type.STRING }
             },
             required: ["description", "categories", "year"]
           }

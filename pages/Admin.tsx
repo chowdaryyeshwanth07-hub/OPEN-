@@ -23,7 +23,9 @@ const Admin: React.FC = () => {
     description: '',
     categories: [] as string[],
     publishedYear: 2024,
-    coverImageUrl: ''
+    coverImageUrl: '',
+    viewUrl: '',
+    downloadUrl: ''
   });
 
   useEffect(() => {
@@ -67,7 +69,9 @@ const Admin: React.FC = () => {
       description: '',
       categories: [],
       publishedYear: 2024,
-      coverImageUrl: ''
+      coverImageUrl: '',
+      viewUrl: '',
+      downloadUrl: ''
     });
     setIsModalOpen(true);
   };
@@ -80,7 +84,9 @@ const Admin: React.FC = () => {
       description: book.description,
       categories: book.categories,
       publishedYear: book.publishedYear || 2024,
-      coverImageUrl: book.coverImageUrl || ''
+      coverImageUrl: book.coverImageUrl || '',
+      viewUrl: book.viewUrl || '',
+      downloadUrl: book.downloadUrl || ''
     });
     setIsModalOpen(true);
   };
@@ -140,7 +146,9 @@ const Admin: React.FC = () => {
         ...prev,
         description: result.description,
         categories: result.categories,
-        publishedYear: result.year
+        publishedYear: result.year,
+        viewUrl: result.viewUrl || prev.viewUrl,
+        downloadUrl: result.downloadUrl || prev.downloadUrl
       }));
     } catch (error) {
       alert('AI Auto-fill failed. Please try manual entry.');
@@ -417,6 +425,29 @@ const Admin: React.FC = () => {
                         value={formData.coverImageUrl}
                         onChange={(e) => setFormData(p => ({...p, coverImageUrl: e.target.value}))}
                         placeholder="https://example.com/cover.jpg"
+                        className="w-full px-5 py-3.5 bg-[#1F1511] border border-[#3A2A23] text-[#F5EFEA] rounded-xl focus:ring-2 focus:ring-[#E6B18A] outline-none transition-all placeholder:text-[#8C7A6B]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-[#8C7A6B] uppercase tracking-widest">Read Online URL</label>
+                      <input 
+                        type="url" 
+                        value={formData.viewUrl}
+                        onChange={(e) => setFormData(p => ({...p, viewUrl: e.target.value}))}
+                        placeholder="https://gutenberg.org/ebooks/..."
+                        className="w-full px-5 py-3.5 bg-[#1F1511] border border-[#3A2A23] text-[#F5EFEA] rounded-xl focus:ring-2 focus:ring-[#E6B18A] outline-none transition-all placeholder:text-[#8C7A6B]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-[#8C7A6B] uppercase tracking-widest">Download URL</label>
+                      <input 
+                        type="url" 
+                        value={formData.downloadUrl}
+                        onChange={(e) => setFormData(p => ({...p, downloadUrl: e.target.value}))}
+                        placeholder="https://example.com/book.pdf"
                         className="w-full px-5 py-3.5 bg-[#1F1511] border border-[#3A2A23] text-[#F5EFEA] rounded-xl focus:ring-2 focus:ring-[#E6B18A] outline-none transition-all placeholder:text-[#8C7A6B]"
                       />
                     </div>

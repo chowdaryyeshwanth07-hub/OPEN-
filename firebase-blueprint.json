@@ -46,6 +46,16 @@
           "type": "integer",
           "description": "The year the book was published."
         },
+        "viewUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to read the book online."
+        },
+        "downloadUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to download the book (e.g., PDF/EPUB)."
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",

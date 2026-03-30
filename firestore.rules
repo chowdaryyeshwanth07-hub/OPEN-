@@ -65,13 +65,15 @@ service cloud.firestore {
 
     function isValidBook(data) {
       return hasRequiredFields(['title', 'author', 'description', 'categories', 'createdAt']) &&
-             hasOnlyAllowedFields(['title', 'author', 'description', 'categories', 'coverImageUrl', 'publishedYear', 'createdAt']) &&
+             hasOnlyAllowedFields(['title', 'author', 'description', 'categories', 'coverImageUrl', 'publishedYear', 'viewUrl', 'downloadUrl', 'createdAt']) &&
              data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
              data.author is string && data.author.size() > 0 && data.author.size() <= 100 &&
              data.description is string && data.description.size() > 0 && data.description.size() <= 5000 &&
              data.categories is list && data.categories.size() <= 10 &&
              (!('coverImageUrl' in data) || (data.coverImageUrl is string && data.coverImageUrl.size() <= 1000)) &&
              (!('publishedYear' in data) || (data.publishedYear is int)) &&
+             (!('viewUrl' in data) || (data.viewUrl is string && data.viewUrl.size() <= 1000)) &&
+             (!('downloadUrl' in data) || (data.downloadUrl is string && data.downloadUrl.size() <= 1000)) &&
              data.createdAt is timestamp;
     }
 

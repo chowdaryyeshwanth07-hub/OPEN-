@@ -1,13 +1,13 @@
 
 export interface Book {
-  id: number;
+  id: string;
   title: string;
   author: string;
   description: string;
   categories: string[];
   coverImageUrl?: string;
   publishedYear?: number;
-  createdAt: number | string;
+  createdAt: any;
 }
 
 export enum SortOption {

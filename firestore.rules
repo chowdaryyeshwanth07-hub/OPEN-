@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: poems
+    // Document ID: auto-generated string
+    // Fields:
+    //   - title: string (required, 1-200 chars)
+    //   - author: string (required, 1-100 chars)
+    //   - description: string (required, 1-5000 chars)
+    //   - categories: list of strings (required, max 10 items)
+    //   - coverImageUrl: string (optional, valid URL)
+    //   - publishedYear: number (optional, positive integer)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: users
+    // Document ID: user UID
+    // Fields:
+    //   - role: string (required, 'admin' or 'user')
+    //   - email: string (required, valid email)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "chowdaryyeshwanth07@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidBook(data) {
+      return hasRequiredFields(['title', 'author', 'description', 'categories', 'createdAt']) &&
+             hasOnlyAllowedFields(['title', 'author', 'description', 'categories', 'coverImageUrl', 'publishedYear', 'createdAt']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.author is string && data.author.size() > 0 && data.author.size() <= 100 &&
+             data.description is string && data.description.size() > 0 && data.description.size() <= 5000 &&
+             data.categories is list && data.categories.size() <= 10 &&
+             (!('coverImageUrl' in data) || (data.coverImageUrl is string && data.coverImageUrl.size() <= 1000)) &&
+             (!('publishedYear' in data) || (data.publishedYear is int && data.publishedYear > 0)) &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Poems collection
+    match /poems/{poemId} {
+      // Anyone can read poems (public library)
+      allow read: if true;
+      
+      // Only admins can create, update, or delete poems
+      allow create: if isAdmin() && isValidBook(request.resource.data);
+      allow update: if isAdmin() && isValidBook(request.resource.data) &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin();
+    }
+
+    // Users collection (for roles)
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.role == 'user';
+      allow update: if isAdmin(); // Only admins can change roles
+      allow delete: if isAdmin();
+    }
+  }
+}

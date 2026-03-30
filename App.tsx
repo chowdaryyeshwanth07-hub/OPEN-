@@ -10,23 +10,26 @@ import Login from './pages/Login.tsx';
 import Privacy from './pages/Privacy.tsx';
 import Terms from './pages/Terms.tsx';
 import LibrarianChat from './components/LibrarianChat.tsx';
+import ErrorBoundary from './components/ErrorBoundary.tsx';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/book/:id" element={<BookDetails />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-        </Routes>
-      </Layout>
-      <LibrarianChat />
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/browse" element={<Browse />} />
+            <Route path="/book/:id" element={<BookDetails />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+          </Routes>
+        </Layout>
+        <LibrarianChat />
+      </Router>
+    </ErrorBoundary>
   );
 };
 

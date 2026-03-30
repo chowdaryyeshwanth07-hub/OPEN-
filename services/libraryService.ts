@@ -1,118 +1,127 @@
 
 import { Book, SortOption } from '../types.ts';
-import { supabase } from '../supabase.ts';
+import { db } from '../firebase.ts';
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  orderBy,
+  serverTimestamp,
+  Timestamp
+} from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '../lib/firestoreUtils.ts';
+
+const COLLECTION_NAME = 'poems';
 
 export const libraryService = {
   getAllBooks: async (): Promise<Book[]> => {
-    if (!supabase) return [];
-    const { data, error } = await supabase
-      .from('poems') // Using 'poems' as requested by the user
-      .select('*')
-      .order('createdAt', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching poems:', error);
+    try {
+      const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id as any,
+        ...doc.data()
+      })) as Book[];
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
       return [];
     }
-    return data || [];
   },
 
-  getBook: async (id: number): Promise<Book | undefined> => {
-    if (!supabase) return undefined;
-    const { data, error } = await supabase
-      .from('poems')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching poem:', error);
+  getBook: async (id: string): Promise<Book | undefined> => {
+    try {
+      const docRef = doc(db, COLLECTION_NAME, id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return { id: docSnap.id as any, ...docSnap.data() } as Book;
+      }
+      return undefined;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, `${COLLECTION_NAME}/${id}`);
       return undefined;
     }
-    return data;
   },
 
   addBook: async (book: Omit<Book, 'id' | 'createdAt'>): Promise<Book | null> => {
-    if (!supabase) return null;
-    const newBook = {
-      ...book,
-      createdAt: new Date().toISOString()
-    };
-    
-    const { data, error } = await supabase
-      .from('poems')
-      .insert([newBook])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error adding poem:', error);
+    try {
+      const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+        ...book,
+        createdAt: serverTimestamp()
+      });
+      const newDoc = await getDoc(docRef);
+      return { id: newDoc.id as any, ...newDoc.data() } as Book;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, COLLECTION_NAME);
       return null;
     }
-    return data;
   },
 
-  updateBook: async (id: number, updated: Partial<Book>): Promise<boolean> => {
-    if (!supabase) return false;
-    const { error } = await supabase
-      .from('poems')
-      .update(updated)
-      .eq('id', id);
-    
-    if (error) {
-      console.error('Error updating poem:', error);
+  updateBook: async (id: string, updated: Partial<Book>): Promise<boolean> => {
+    try {
+      const docRef = doc(db, COLLECTION_NAME, id);
+      await updateDoc(docRef, updated);
+      return true;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `${COLLECTION_NAME}/${id}`);
       return false;
     }
-    return true;
   },
 
-  deleteBook: async (id: number): Promise<boolean> => {
-    if (!supabase) return false;
-    const { error } = await supabase
-      .from('poems')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
-      console.error('Error deleting poem:', error);
+  deleteBook: async (id: string): Promise<boolean> => {
+    try {
+      await deleteDoc(doc(db, COLLECTION_NAME, id));
+      return true;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `${COLLECTION_NAME}/${id}`);
       return false;
     }
-    return true;
   },
 
   searchAndFilter: async (keyword: string, category: string, sort: SortOption): Promise<Book[]> => {
-    if (!supabase) return [];
-    let query = supabase.from('poems').select('*');
+    try {
+      let q = query(collection(db, COLLECTION_NAME));
 
-    if (keyword) {
-      const lower = keyword.toLowerCase();
-      query = query.or(`title.ilike.%${lower}%,author.ilike.%${lower}%,description.ilike.%${lower}%`);
-    }
+      const querySnapshot = await getDocs(q);
+      let books = querySnapshot.docs.map(doc => ({
+        id: doc.id as any,
+        ...doc.data()
+      })) as Book[];
 
-    if (category && category !== 'All') {
-      query = query.contains('categories', [category]);
-    }
+      if (keyword) {
+        const lower = keyword.toLowerCase();
+        books = books.filter(b => 
+          b.title.toLowerCase().includes(lower) || 
+          b.author.toLowerCase().includes(lower) || 
+          b.description.toLowerCase().includes(lower)
+        );
+      }
 
-    switch (sort) {
-      case SortOption.NEWEST:
-        query = query.order('createdAt', { ascending: false });
-        break;
-      case SortOption.OLDEST:
-        query = query.order('createdAt', { ascending: true });
-        break;
-      case SortOption.TITLE_ASC:
-        query = query.order('title', { ascending: true });
-        break;
-      case SortOption.TITLE_DESC:
-        query = query.order('title', { ascending: false });
-        break;
-    }
+      if (category && category !== 'All') {
+        books = books.filter(b => b.categories.includes(category));
+      }
 
-    const { data, error } = await query;
-    if (error) {
-      console.error('Error searching poems:', error);
+      books.sort((a, b) => {
+        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : new Date(a.createdAt).getTime();
+        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : new Date(b.createdAt).getTime();
+        
+        switch (sort) {
+          case SortOption.NEWEST: return dateB - dateA;
+          case SortOption.OLDEST: return dateA - dateB;
+          case SortOption.TITLE_ASC: return a.title.localeCompare(b.title);
+          case SortOption.TITLE_DESC: return b.title.localeCompare(a.title);
+          default: return 0;
+        }
+      });
+
+      return books;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
       return [];
     }
-    return data || [];
   }
 };

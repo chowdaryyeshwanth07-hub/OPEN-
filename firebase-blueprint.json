@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "Book": {
+      "title": "Book",
+      "description": "A book or poem in the library collection.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the book or poem."
+        },
+        "author": {
+          "type": "string",
+          "description": "The author of the book or poem."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the book or poem."
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of categories the book belongs to."
+        },
+        "coverImageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the cover image of the book."
+        },
+        "publishedYear": {
+          "type": "integer",
+          "description": "The year the book was published."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the record was created."
+        }
+      },
+      "required": ["title", "author", "description", "categories"]
+    }
+  },
+  "firestore": {
+    "/poems": {
+      "schema": "Book",
+      "description": "Collection of books and poems."
+    }
+  }
+}

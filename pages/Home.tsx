@@ -4,6 +4,7 @@ import { libraryService } from '../services/libraryService.ts';
 import { Book } from '../types.ts';
 import BookCard from '../components/BookCard.tsx';
 import { Link, useNavigate } from 'react-router-dom';
+import { Timestamp } from 'firebase/firestore';
 
 const Home: React.FC = () => {
   const [featuredBooks, setFeaturedBooks] = useState<Book[]>([]);
@@ -14,8 +15,8 @@ const Home: React.FC = () => {
     const fetchFeatured = async () => {
       const all = await libraryService.getAllBooks();
       const sorted = [...all].sort((a, b) => {
-        const dateA = typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() : a.createdAt;
-        const dateB = typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() : b.createdAt;
+        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : new Date(a.createdAt).getTime();
+        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : new Date(b.createdAt).getTime();
         return dateB - dateA;
       }).slice(0, 6);
       setFeaturedBooks(sorted);

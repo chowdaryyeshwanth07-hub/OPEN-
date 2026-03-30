@@ -34,12 +34,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     
     checkAuth();
 
-    const { data: { subscription } } = authService.onAuthStateChange((_event, session) => {
+    const unsubscribe = authService.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
     });
 
     return () => {
-      subscription.unsubscribe();
+      unsubscribe();
     };
   }, []);
 

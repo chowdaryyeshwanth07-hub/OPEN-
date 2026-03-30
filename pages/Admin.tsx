@@ -10,7 +10,7 @@ import { CATEGORIES } from '../constants.tsx';
 const Admin: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
@@ -76,7 +76,7 @@ const Admin: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
       await libraryService.deleteBook(id);
       refreshBooks();

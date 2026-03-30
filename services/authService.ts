@@ -1,47 +1,41 @@
 
-import { supabase } from '../supabase.ts';
+import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, User } from '../firebase.ts';
 
 export const authService = {
   login: async (email: string, password?: string) => {
-    if (!supabase) throw new Error('Supabase not initialized. Please check your environment variables.');
-    // For demo purposes, we'll use a simple login if password is not provided
-    // but in a real app, you'd use supabase.auth.signInWithPassword
-    if (password) {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      return data;
-    } else {
-      // Fallback for simple email-only login (OTP or just mock)
-      const { data, error } = await supabase.auth.signInWithOtp({ email });
-      if (error) throw error;
-      return data;
-    }
+    // Firebase doesn't support simple email login without password easily in this context
+    // We'll focus on Google Sign-In as requested
+    throw new Error('Please use Google Sign-In or provide a password for Firebase Auth.');
   },
   signUp: async (email: string, password?: string) => {
-    if (!supabase) throw new Error('Supabase not initialized. Please check your environment variables.');
-    if (password) {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      return data;
+    throw new Error('Please use Google Sign-In.');
+  },
+  signInWithGoogle: async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      return result.user;
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+      throw error;
     }
   },
   logout: async () => {
-    if (!supabase) return;
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    await signOut(auth);
   },
   isAuthenticated: async (): Promise<boolean> => {
-    if (!supabase) return false;
-    const { data: { session } } = await supabase.auth.getSession();
-    return !!session;
+    return new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        unsubscribe();
+        resolve(!!user);
+      });
+    });
   },
-  getUser: async () => {
-    if (!supabase) return null;
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
+  getUser: async (): Promise<User | null> => {
+    return auth.currentUser;
   },
   onAuthStateChange: (callback: (event: string, session: any) => void) => {
-    if (!supabase) return { data: { subscription: { unsubscribe: () => {} } } };
-    return supabase.auth.onAuthStateChange(callback);
+    return onAuthStateChanged(auth, (user) => {
+      callback(user ? 'SIGNED_IN' : 'SIGNED_OUT', user);
+    });
   }
 };

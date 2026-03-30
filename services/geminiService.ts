@@ -1,9 +1,9 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { Book } from "../types.ts";
 
 // Utility to get a fresh AI instance
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAI = () => new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export const geminiService = {
   async getBookSummary(book: Book): Promise<string> {
@@ -13,7 +13,7 @@ export const geminiService = {
         model: 'gemini-3-flash-preview',
         contents: `Provide an insightful, engaging 3-sentence summary of the book "${book.title}" by ${book.author}. Focus on the main themes and why it's worth reading.`,
         config: {
-          thinkingConfig: { thinkingBudget: 0 }
+          thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL }
         }
       });
       return response.text || "No summary available.";

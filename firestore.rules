@@ -91,5 +91,10 @@ service cloud.firestore {
       allow update: if isAdmin(); // Only admins can change roles
       allow delete: if isAdmin();
     }
+
+    // Diagnostic collection for connection testing
+    match /test/connection {
+      allow read: if true;
+    }
   }
 }

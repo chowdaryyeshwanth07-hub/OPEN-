@@ -124,6 +124,29 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleSeedDatabase = async () => {
+    if (books.length > 0) {
+      if (!window.confirm('This will add initial books to your library. Continue?')) return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const { SAMPLE_100_BOOKS } = await import('../sampleBooks.ts');
+      for (const book of SAMPLE_100_BOOKS) {
+        // @ts-ignore - bookData might have extra fields but addBook handles it
+        const { id, createdAt, ...bookData } = book as any;
+        await libraryService.addBook(bookData);
+      }
+      await refreshBooks();
+      alert('Database seeded with 100 books successfully!');
+    } catch (error) {
+      alert('Seeding failed. Check console for details.');
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-12 animate-fadeIn pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-8">
@@ -131,15 +154,27 @@ const Admin: React.FC = () => {
           <h1 className="text-4xl font-extrabold text-[#F5EFEA] tracking-tight">Library Manager</h1>
           <p className="text-[#CBB8A9] mt-3">Curate and maintain your digital collection workspace.</p>
         </div>
-        <button 
-          onClick={openAddModal}
-          className="flex items-center space-x-3 px-8 py-4 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-95"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Add New Book</span>
-        </button>
+        <div className="flex flex-wrap gap-4">
+          <button 
+            onClick={handleSeedDatabase}
+            disabled={isLoading}
+            className="flex items-center space-x-3 px-6 py-4 bg-[#1F1511] text-[#E6B18A] border border-[#E6B18A]/20 font-bold rounded-2xl shadow-xl hover:bg-[#E6B18A]/5 transition-all transform active:scale-95 disabled:opacity-50"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Seed Data</span>
+          </button>
+          <button 
+            onClick={openAddModal}
+            className="flex items-center space-x-3 px-8 py-4 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-95"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add New Book</span>
+          </button>
+        </div>
       </div>
 
       {/* Book Table */}

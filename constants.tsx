@@ -62,9 +62,29 @@ export const INITIAL_BOOKS: Book[] = [
     coverImageUrl: "https://picsum.photos/seed/moby/400/600",
     publishedYear: 1851,
     createdAt: Date.now() - 6000000
+  },
+  {
+    id: "7",
+    title: "The Catcher in the Rye",
+    author: "J.D. Salinger",
+    description: "A story about the young Holden Caulfield and his experiences in New York City after being expelled from his prep school.",
+    categories: ["Classic", "Fiction"],
+    coverImageUrl: "https://picsum.photos/seed/catcher/400/600",
+    publishedYear: 1951,
+    createdAt: Date.now() - 7000000
+  },
+  {
+    id: "8",
+    title: "The Alchemist",
+    author: "Paulo Coelho",
+    description: "A fable about a shepherd boy named Santiago who travels from Spain to Egypt in search of treasure.",
+    categories: ["Fantasy", "Philosophy"],
+    coverImageUrl: "https://picsum.photos/seed/alchemist/400/600",
+    publishedYear: 1988,
+    createdAt: Date.now() - 8000000
   }
 ];
 
 export const CATEGORIES = [
-  "Classic", "Fiction", "Drama", "Dystopian", "Political", "Sci-Fi", "Fantasy", "Adventure", "Philosophy", "History"
+  "Classic", "Fiction", "Drama", "Dystopian", "Political Fiction", "Sci-Fi", "Science Fiction", "Fantasy", "Adventure", "Philosophy", "History", "Science", "Biology", "Psychology", "Business", "Entrepreneurship", "Technology", "Mystery", "Thriller", "Crime", "Biography", "Politics", "Physics", "Astronomy", "Poetry", "Modernism", "Management", "Finance", "Self-Help", "Epic", "Mythology", "Magical Realism", "Education", "Memoir", "Sociology", "Economics", "Lifestyle", "Art", "Leadership"
 ];

@@ -15,7 +15,19 @@ const Login: React.FC = () => {
       await authService.signInWithGoogle();
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in with Google');
+      let message = err.message || 'Failed to sign in with Google';
+      try {
+        const parsed = JSON.parse(message);
+        if (parsed.error) {
+          message = parsed.error;
+          if (message.includes('Missing or insufficient permissions')) {
+            message = 'Permission denied. Please ensure your email is authorized and try again.';
+          }
+        }
+      } catch (e) {
+        // Not a JSON error
+      }
+      setError(message);
       setGoogleLoading(false);
     }
   };

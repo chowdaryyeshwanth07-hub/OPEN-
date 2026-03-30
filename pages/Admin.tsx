@@ -85,20 +85,36 @@ const Admin: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
-      await libraryService.deleteBook(id);
-      refreshBooks();
+      setIsLoading(true);
+      try {
+        await libraryService.deleteBook(id);
+        await refreshBooks();
+      } catch (error) {
+        console.error('Delete failed:', error);
+        alert('Failed to delete book. Check console for details.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      await libraryService.updateBook(editingId, formData);
-    } else {
-      await libraryService.addBook(formData);
+    setIsLoading(true);
+    try {
+      if (editingId) {
+        await libraryService.updateBook(editingId, formData);
+      } else {
+        await libraryService.addBook(formData);
+      }
+      setIsModalOpen(false);
+      await refreshBooks();
+    } catch (error) {
+      console.error('Submit failed:', error);
+      alert('Failed to save book. Check console for details.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsModalOpen(false);
-    refreshBooks();
   };
 
   const toggleCategory = (cat: string) => {
@@ -382,9 +398,11 @@ const Admin: React.FC = () => {
                 </button>
                 <button 
                   type="submit"
-                  className="px-10 py-4 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-95"
+                  disabled={isLoading}
+                  className="px-10 py-4 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-95 disabled:opacity-50 flex items-center space-x-2"
                 >
-                  {editingId ? 'Update Record' : 'Save New Book'}
+                  {isLoading && <div className="w-4 h-4 border-2 border-[#1A120E] border-t-transparent rounded-full animate-spin"></div>}
+                  <span>{editingId ? 'Update Record' : 'Save New Book'}</span>
                 </button>
               </div>
             </form>

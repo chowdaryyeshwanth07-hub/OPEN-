@@ -24,8 +24,13 @@ const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, chil
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -98,12 +103,33 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             )}
           </div>
 
-          <button className="md:hidden p-2 text-[#CBB8A9]">
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 text-[#CBB8A9] hover:text-[#F5EFEA] transition-colors"
+          >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+              )}
             </svg>
           </button>
         </nav>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-[#241814] border-b border-[#3A2A23] py-6 px-4 space-y-4 animate-slideDown">
+            <div className="flex flex-col space-y-3">
+              <NavLink to="/">Home</NavLink>
+              <NavLink to="/browse">Browse</NavLink>
+              {isAdmin && <NavLink to="/admin">Manage</NavLink>}
+              {!isAuthenticated && location.pathname !== '/login' && (
+                <NavLink to="/login">Login</NavLink>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 py-8">

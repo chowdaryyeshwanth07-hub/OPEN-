@@ -16,6 +16,7 @@ const BookDetails: React.FC = () => {
       const fetchBook = async () => {
         const found = await libraryService.getBook(id);
         if (found) {
+          console.log("Fetched book details:", found);
           setBook(found);
         }
       };
@@ -40,6 +41,12 @@ const BookDetails: React.FC = () => {
     );
   }
 
+  // Debug log for the current book state
+  console.log("Rendering BookDetails for:", book.title, {
+    viewUrl: book.viewUrl,
+    downloadUrl: book.downloadUrl
+  });
+
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-fadeIn pb-20">
       <Link to="/browse" className="inline-flex items-center text-[#CBB8A9] hover:text-[#E6B18A] font-bold transition-colors">
@@ -59,37 +66,32 @@ const BookDetails: React.FC = () => {
                className="w-full aspect-[2/3] object-cover rounded-[2.5rem] opacity-90"
              />
           </div>
-          
           <div className="flex flex-col gap-4">
-            {book.viewUrl ? (
-              <a 
-                href={book.viewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-4.5 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-[0.98] text-center cursor-pointer"
-              >
-                Read Online
-              </a>
-            ) : (
-              <div className="w-full py-4.5 bg-[#E6B18A]/20 text-[#CBB8A9] font-bold rounded-2xl border border-[#3A2A23] text-center cursor-not-allowed">
-                Read Online (N/A)
-              </div>
-            )}
+             <a 
+               href={book.viewUrl || '#'}
+               target="_blank"
+               rel="noopener noreferrer"
+               className={`w-full py-4.5 font-bold rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center ${
+                 book.viewUrl 
+                   ? "bg-[#E6B18A] text-[#1A120E] hover:bg-[#D39A70]" 
+                   : "bg-[#E6B18A]/50 text-[#1A120E]/50 cursor-not-allowed pointer-events-none"
+               }`}
+             >
+                {book.viewUrl ? "Read Online" : "Read Online (N/A)"}
+             </a>
 
-            {book.downloadUrl ? (
-              <a 
-                href={book.downloadUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-4.5 bg-[#1F1511] text-[#F5EFEA] font-bold rounded-2xl border border-[#3A2A23] hover:bg-[#241814] transition-all text-center cursor-pointer"
-              >
-                Download Book
-              </a>
-            ) : (
-              <div className="w-full py-4.5 bg-[#1F1511]/40 text-[#8C7A6B] font-bold rounded-2xl border border-[#3A2A23]/50 text-center cursor-not-allowed">
-                Download (N/A)
-              </div>
-            )}
+             <a 
+               href={book.downloadUrl || '#'}
+               target="_blank"
+               rel="noopener noreferrer"
+               className={`w-full py-4.5 font-bold rounded-2xl border transition-all text-center ${
+                 book.downloadUrl
+                   ? "bg-[#1F1511] text-[#F5EFEA] border-[#3A2A23] hover:bg-[#241814]"
+                   : "bg-[#1F1511]/50 text-[#F5EFEA]/50 border-[#3A2A23]/50 cursor-not-allowed pointer-events-none"
+               }`}
+             >
+                {book.downloadUrl ? "Download Book" : "Download (N/A)"}
+             </a>
           </div>
         </div>
 

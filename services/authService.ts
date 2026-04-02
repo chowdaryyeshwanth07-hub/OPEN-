@@ -1,57 +1,7 @@
 
 import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, User, db, doc, getDoc, setDoc, serverTimestamp } from '../firebase.ts';
 import { UserProfile, UserRole } from '../types.ts';
-
-export enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-export interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId: string | undefined;
-    email: string | null | undefined;
-    emailVerified: boolean | undefined;
-    isAnonymous: boolean | undefined;
-    tenantId: string | null | undefined;
-    providerInfo: {
-      providerId: string;
-      displayName: string | null;
-      email: string | null;
-      photoUrl: string | null;
-    }[];
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
-        providerId: provider.providerId,
-        displayName: provider.displayName,
-        email: provider.email,
-        photoUrl: provider.photoURL
-      })) || []
-    },
-    operationType,
-    path
-  }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
+import { handleFirestoreError, OperationType } from '../lib/firestoreUtils.ts';
 
 export const authService = {
   login: async (email: string, password?: string) => {
@@ -61,24 +11,33 @@ export const authService = {
     throw new Error('Please use Google Sign-In.');
   },
   signInWithGoogle: async (): Promise<UserProfile> => {
+    console.log('Starting Google Sign-In...');
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+      console.log('Google Sign-In successful, user:', user.email, 'uid:', user.uid);
       
       // Check if profile exists
       let userDoc;
       try {
+        console.log('Checking for existing user profile in Firestore...');
         userDoc = await getDoc(doc(db, 'users', user.uid));
+        console.log('User profile fetch result - exists:', userDoc.exists());
       } catch (error) {
+        console.error('Error fetching user profile from Firestore:', error);
         handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
       }
       
       if (userDoc && userDoc.exists()) {
-        return userDoc.data() as UserProfile;
+        const profile = userDoc.data() as UserProfile;
+        console.log('Existing user profile found:', profile);
+        return profile;
       } else {
+        console.log('No existing profile, creating new one...');
         // Create new profile
         // Default admin for the specified email
         const role: UserRole = user.email === 'chowdaryyeshwanth07@gmail.com' ? 'admin' : 'viewer';
+        console.log('Assigning role:', role);
         
         const newProfile: UserProfile = {
           uid: user.uid,
@@ -89,8 +48,11 @@ export const authService = {
         };
         
         try {
+          console.log('Saving new profile to Firestore:', newProfile);
           await setDoc(doc(db, 'users', user.uid), newProfile);
+          console.log('New user profile created successfully');
         } catch (error) {
+          console.error('Error creating user profile in Firestore:', error);
           handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
         }
         return newProfile;
@@ -99,7 +61,7 @@ export const authService = {
       if (error instanceof Error && error.message.includes('{"error":')) {
         throw error; // Already handled
       }
-      console.error('Error signing in with Google:', error);
+      console.error('Error in signInWithGoogle:', error);
       throw error;
     }
   },

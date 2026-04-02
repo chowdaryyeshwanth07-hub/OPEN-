@@ -16,27 +16,40 @@ import {
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../lib/firestoreUtils.ts';
 
-const COLLECTION_NAME = 'books';
+const COLLECTION_NAME = 'poems';
 
 export const libraryService = {
   getAllBooks: async (): Promise<Book[]> => {
+    console.log(`Fetching all books from collection: ${COLLECTION_NAME}`);
     try {
       const q = query(collection(db, COLLECTION_NAME));
       const querySnapshot = await getDocs(q);
-      const books = querySnapshot.docs.map(doc => ({
-        id: doc.id as any,
-        ...doc.data()
-      })) as Book[];
-
-      // Sort in memory to be more robust if some docs lack createdAt
-      books.sort((a, b) => {
+      console.log(`Found ${querySnapshot.docs.length} documents in ${COLLECTION_NAME}`);
+      const books = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id as any,
+          ...data,
+          viewUrl: data.viewUrl || data.view_url,
+          downloadUrl: data.downloadUrl || data.download_url,
+          coverImageUrl: data.coverImageUrl || data.cover_image_url,
+          publishedYear: data.publishedYear || data.published_year,
+        } as Book;
+      });
+      
+      // Sort in memory to avoid issues with missing createdAt fields in Firestore
+      return books.sort((a, b) => {
         const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
         const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
-        return dateB - dateA;
+        
+        // Handle NaN
+        const timeA = isNaN(dateA) ? 0 : dateA;
+        const timeB = isNaN(dateB) ? 0 : dateB;
+        
+        return timeB - timeA;
       });
-
-      return books;
     } catch (error) {
+      console.error(`Error in getAllBooks for collection ${COLLECTION_NAME}:`, error);
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
       return [];
     }
@@ -47,7 +60,15 @@ export const libraryService = {
       const docRef = doc(db, COLLECTION_NAME, id);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        return { id: docSnap.id as any, ...docSnap.data() } as Book;
+        const data = docSnap.data();
+        return { 
+          id: docSnap.id as any, 
+          ...data,
+          viewUrl: data.viewUrl || data.view_url,
+          downloadUrl: data.downloadUrl || data.download_url,
+          coverImageUrl: data.coverImageUrl || data.cover_image_url,
+          publishedYear: data.publishedYear || data.published_year,
+        } as Book;
       }
       return undefined;
     } catch (error) {
@@ -63,7 +84,17 @@ export const libraryService = {
         createdAt: serverTimestamp()
       });
       const newDoc = await getDoc(docRef);
-      return { id: newDoc.id as any, ...newDoc.data() } as Book;
+      const data = newDoc.data();
+      if (!data) return null;
+      
+      return { 
+        id: newDoc.id as any, 
+        ...data,
+        viewUrl: data.viewUrl || data.view_url,
+        downloadUrl: data.downloadUrl || data.download_url,
+        coverImageUrl: data.coverImageUrl || data.cover_image_url,
+        publishedYear: data.publishedYear || data.published_year,
+      } as Book;
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, COLLECTION_NAME);
       return null;
@@ -96,10 +127,17 @@ export const libraryService = {
       let q = query(collection(db, COLLECTION_NAME));
 
       const querySnapshot = await getDocs(q);
-      let books = querySnapshot.docs.map(doc => ({
-        id: doc.id as any,
-        ...doc.data()
-      })) as Book[];
+      let books = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id as any,
+          ...data,
+          viewUrl: data.viewUrl || data.view_url,
+          downloadUrl: data.downloadUrl || data.download_url,
+          coverImageUrl: data.coverImageUrl || data.cover_image_url,
+          publishedYear: data.publishedYear || data.published_year,
+        } as Book;
+      });
 
       if (keyword) {
         const lower = keyword.toLowerCase();
@@ -115,8 +153,8 @@ export const libraryService = {
       }
 
       books.sort((a, b) => {
-        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
-        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : new Date(a.createdAt).getTime();
+        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : new Date(b.createdAt).getTime();
         
         switch (sort) {
           case SortOption.NEWEST: return dateB - dateA;

@@ -6,7 +6,7 @@ service cloud.firestore {
     // Assumed Data Model
     // ===============================================================
     //
-    // Collection: books
+    // Collection: poems
     // Document ID: auto-generated string
     // Fields:
     //   - title: string (required, 1-200 chars)
@@ -65,15 +65,19 @@ service cloud.firestore {
 
     function isValidBook(data) {
       return hasRequiredFields(['title', 'author', 'description', 'categories', 'createdAt']) &&
-             hasOnlyAllowedFields(['title', 'author', 'description', 'categories', 'coverImageUrl', 'publishedYear', 'viewUrl', 'downloadUrl', 'createdAt']) &&
+             hasOnlyAllowedFields(['title', 'author', 'description', 'categories', 'coverImageUrl', 'cover_image_url', 'publishedYear', 'published_year', 'viewUrl', 'view_url', 'downloadUrl', 'download_url', 'createdAt']) &&
              data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
              data.author is string && data.author.size() > 0 && data.author.size() <= 100 &&
              data.description is string && data.description.size() > 0 && data.description.size() <= 5000 &&
              data.categories is list && data.categories.size() <= 10 &&
              (!('coverImageUrl' in data) || (data.coverImageUrl is string && data.coverImageUrl.size() <= 1000)) &&
+             (!('cover_image_url' in data) || (data.cover_image_url is string && data.cover_image_url.size() <= 1000)) &&
              (!('publishedYear' in data) || (data.publishedYear is int)) &&
+             (!('published_year' in data) || (data.published_year is int)) &&
              (!('viewUrl' in data) || (data.viewUrl is string && data.viewUrl.size() <= 1000)) &&
+             (!('view_url' in data) || (data.view_url is string && data.view_url.size() <= 1000)) &&
              (!('downloadUrl' in data) || (data.downloadUrl is string && data.downloadUrl.size() <= 1000)) &&
+             (!('download_url' in data) || (data.download_url is string && data.download_url.size() <= 1000)) &&
              data.createdAt is timestamp;
     }
 
@@ -86,12 +90,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Books collection
-    match /books/{bookId} {
-      // Anyone can read books (public library)
+    // Poems collection
+    match /poems/{poemId} {
+      // Anyone can read poems (public library)
       allow read: if true;
       
-      // Only admins can create, update, or delete books
+      // Only admins can create, update, or delete poems
       allow create: if isAdmin() && isValidBook(request.resource.data);
       allow update: if isAdmin() && isValidBook(request.resource.data) &&
                       request.resource.data.createdAt == resource.data.createdAt;

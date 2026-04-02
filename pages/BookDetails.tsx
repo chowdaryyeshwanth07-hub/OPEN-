@@ -59,42 +59,25 @@ const BookDetails: React.FC = () => {
                className="w-full aspect-[2/3] object-cover rounded-[2.5rem] opacity-90"
              />
           </div>
+          
           <div className="flex flex-col gap-4">
-             {book.viewUrl ? (
-               <a 
-                 href={book.viewUrl}
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="w-full py-4.5 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-[0.98] text-center"
-               >
-                  Read Online
-               </a>
-             ) : (
-               <button 
-                 disabled
-                 className="w-full py-4.5 bg-[#E6B18A]/50 text-[#1A120E]/50 font-bold rounded-2xl shadow-xl cursor-not-allowed"
-               >
-                  Read Online (N/A)
-               </button>
-             )}
+            <a 
+              href={book.viewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4.5 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-[0.98] text-center"
+            >
+              Read Online
+            </a>
 
-             {book.downloadUrl ? (
-               <a 
-                 href={book.downloadUrl}
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="w-full py-4.5 bg-[#1F1511] text-[#F5EFEA] font-bold rounded-2xl border border-[#3A2A23] hover:bg-[#241814] transition-all text-center"
-               >
-                  Download Book
-               </a>
-             ) : (
-               <button 
-                 disabled
-                 className="w-full py-4.5 bg-[#1F1511]/50 text-[#F5EFEA]/50 font-bold rounded-2xl border border-[#3A2A23]/50 cursor-not-allowed"
-               >
-                  Download (N/A)
-               </button>
-             )}
+            <a 
+              href={book.downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4.5 bg-[#1F1511] text-[#F5EFEA] font-bold rounded-2xl border border-[#3A2A23] hover:bg-[#241814] transition-all text-center"
+            >
+              Download Book
+            </a>
           </div>
         </div>
 

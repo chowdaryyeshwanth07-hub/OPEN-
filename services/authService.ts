@@ -3,6 +3,21 @@ import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, Use
 import { UserProfile, UserRole } from '../types.ts';
 import { handleFirestoreError, OperationType } from '../lib/firestoreUtils.ts';
 
+let authReadyPromise: Promise<User | null> | null = null;
+
+const waitForAuth = (): Promise<User | null> => {
+  if (authReadyPromise) return authReadyPromise;
+  console.log('Initializing auth state listener...');
+  authReadyPromise = new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('Auth state determined:', user ? user.email : 'No user');
+      unsubscribe();
+      resolve(user);
+    });
+  });
+  return authReadyPromise;
+};
+
 export const authService = {
   login: async (email: string, password?: string) => {
     throw new Error('Please use Google Sign-In.');
@@ -62,6 +77,12 @@ export const authService = {
         throw error; // Already handled
       }
       console.error('Error in signInWithGoogle:', error);
+      if (error instanceof Error && error.message.includes('popup-closed-by-user')) {
+        throw new Error('Sign-in popup was closed before completion. Please try again.');
+      }
+      if (error instanceof Error && error.message.includes('popup-blocked')) {
+        throw new Error('Sign-in popup was blocked by your browser. Please allow popups for this site or open the app in a new tab.');
+      }
       throw error;
     }
   },
@@ -69,18 +90,14 @@ export const authService = {
     await signOut(auth);
   },
   isAuthenticated: async (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        unsubscribe();
-        resolve(!!user);
-      });
-    });
+    const user = await waitForAuth();
+    return !!user;
   },
   getUser: async (): Promise<User | null> => {
-    return auth.currentUser;
+    return await waitForAuth();
   },
   getUserProfile: async (): Promise<UserProfile | null> => {
-    const user = auth.currentUser;
+    const user = await waitForAuth();
     if (!user) return null;
     
     try {

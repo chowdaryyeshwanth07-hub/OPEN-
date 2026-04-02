@@ -201,17 +201,50 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleDeduplicate = async () => {
+    setIsLoading(true);
+    try {
+      const { deleted } = await libraryService.deduplicateBooks();
+      await refreshBooks();
+      setModalState({
+        isOpen: true,
+        title: 'Cleanup Complete',
+        message: `Successfully removed ${deleted} duplicate book records.`,
+        type: 'alert'
+      });
+    } catch (error) {
+      setModalState({
+        isOpen: true,
+        title: 'Cleanup Error',
+        message: 'Failed to remove duplicates. Check console for details.',
+        type: 'alert'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSeedDatabase = async () => {
     const startSeeding = async () => {
       setIsLoading(true);
       let successCount = 0;
+      let skipCount = 0;
       let failCount = 0;
       
       try {
         const { SAMPLE_100_BOOKS } = await import('../sampleBooks.ts');
+        const existingBooks = await libraryService.getAllBooks();
+        const existingMap = new Set(existingBooks.map(b => `${b.title.toLowerCase()}|${b.author.toLowerCase()}`));
+
         console.log(`Starting seeding of ${SAMPLE_100_BOOKS.length} books...`);
         
         for (const book of SAMPLE_100_BOOKS) {
+          const identifier = `${book.title.toLowerCase()}|${book.author.toLowerCase()}`;
+          if (existingMap.has(identifier)) {
+            skipCount++;
+            continue;
+          }
+
           try {
             // @ts-ignore - bookData might have extra fields but addBook handles it
             const { id, createdAt, ...bookData } = book as any;
@@ -228,21 +261,12 @@ const Admin: React.FC = () => {
         
         await refreshBooks();
         
-        if (failCount === 0) {
-          setModalState({
-            isOpen: true,
-            title: 'Seeding Complete',
-            message: `Database seeded with ${successCount} books successfully!`,
-            type: 'alert'
-          });
-        } else {
-          setModalState({
-            isOpen: true,
-            title: 'Seeding Finished',
-            message: `Seeding complete. Success: ${successCount}, Failed: ${failCount}. Check console for details.`,
-            type: 'alert'
-          });
-        }
+        setModalState({
+          isOpen: true,
+          title: 'Seeding Finished',
+          message: `Seeding complete. Success: ${successCount}, Skipped: ${skipCount}, Failed: ${failCount}.`,
+          type: 'alert'
+        });
       } catch (error) {
         console.error('Critical seeding error:', error);
         setModalState({
@@ -277,6 +301,14 @@ const Admin: React.FC = () => {
           <p className="text-[#CBB8A9] mt-3">Curate and maintain your digital collection workspace.</p>
         </div>
         <div className="flex flex-wrap gap-4">
+          <button 
+            onClick={handleDeduplicate}
+            disabled={isLoading}
+            className="flex items-center space-x-3 px-6 py-4 bg-[#1F1511] text-[#E6B18A] border border-[#E6B18A]/20 font-bold rounded-2xl shadow-xl hover:bg-[#E6B18A]/5 transition-all transform active:scale-95 disabled:opacity-50"
+          >
+            <Trash2 className="w-6 h-6" />
+            <span>Clean Duplicates</span>
+          </button>
           <button 
             onClick={handleSeedDatabase}
             disabled={isLoading}

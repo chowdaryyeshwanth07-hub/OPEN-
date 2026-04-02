@@ -37,8 +37,19 @@ export const libraryService = {
         } as Book;
       });
       
+      // Deduplicate in memory to ensure UI is clean
+      const uniqueBooks: Book[] = [];
+      const seen = new Set<string>();
+      for (const book of books) {
+        const identifier = `${book.title.toLowerCase()}|${book.author.toLowerCase()}`;
+        if (!seen.has(identifier)) {
+          seen.add(identifier);
+          uniqueBooks.push(book);
+        }
+      }
+      
       // Sort in memory to avoid issues with missing createdAt fields in Firestore
-      return books.sort((a, b) => {
+      return uniqueBooks.sort((a, b) => {
         const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
         const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
         
@@ -122,6 +133,28 @@ export const libraryService = {
     }
   },
 
+  deduplicateBooks: async (): Promise<{ deleted: number }> => {
+    try {
+      const allBooks = await libraryService.getAllBooks();
+      const seen = new Set<string>();
+      let deletedCount = 0;
+
+      for (const book of allBooks) {
+        const identifier = `${book.title.toLowerCase()}|${book.author.toLowerCase()}`;
+        if (seen.has(identifier)) {
+          await libraryService.deleteBook(book.id);
+          deletedCount++;
+        } else {
+          seen.add(identifier);
+        }
+      }
+      return { deleted: deletedCount };
+    } catch (error) {
+      console.error('Deduplication failed:', error);
+      return { deleted: 0 };
+    }
+  },
+
   searchAndFilter: async (keyword: string, category: string, sort: SortOption): Promise<Book[]> => {
     try {
       let q = query(collection(db, COLLECTION_NAME));
@@ -138,6 +171,18 @@ export const libraryService = {
           publishedYear: data.publishedYear || data.published_year,
         } as Book;
       });
+
+      // Deduplicate in memory to ensure UI is clean
+      const uniqueBooks: Book[] = [];
+      const seen = new Set<string>();
+      for (const book of books) {
+        const identifier = `${book.title.toLowerCase()}|${book.author.toLowerCase()}`;
+        if (!seen.has(identifier)) {
+          seen.add(identifier);
+          uniqueBooks.push(book);
+        }
+      }
+      books = uniqueBooks;
 
       if (keyword) {
         const lower = keyword.toLowerCase();

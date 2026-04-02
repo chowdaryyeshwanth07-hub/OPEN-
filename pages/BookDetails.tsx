@@ -4,9 +4,6 @@ import { libraryService } from '../services/libraryService.ts';
 import { geminiService } from '../services/geminiService.ts';
 import { Book } from '../types.ts';
 
-const DEFAULT_VIEW_URL = "https://example.com/read";
-const DEFAULT_DOWNLOAD_URL = "https://example.com/download";
-
 const BookDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [book, setBook] = useState<Book | null>(null);
@@ -17,17 +14,8 @@ const BookDetails: React.FC = () => {
     if (id) {
       const fetchBook = async () => {
         const found = await libraryService.getBook(id);
-
         if (found) {
-          // Ensure URLs exist
-          const bookWithUrls: Book = {
-            ...found,
-            viewUrl: found.viewUrl || DEFAULT_VIEW_URL,
-            downloadUrl: found.downloadUrl || DEFAULT_DOWNLOAD_URL,
-          };
-
-          console.log("Fetched book details:", bookWithUrls);
-          setBook(bookWithUrls);
+          setBook(found); // Use original URLs from database/API
         }
       };
       fetchBook();
@@ -52,11 +40,6 @@ const BookDetails: React.FC = () => {
       </div>
     );
   }
-
-  console.log("Rendering BookDetails for:", book.title, {
-    viewUrl: book.viewUrl,
-    downloadUrl: book.downloadUrl,
-  });
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-fadeIn pb-20">
@@ -91,14 +74,7 @@ const BookDetails: React.FC = () => {
               >
                 Read Online
               </a>
-            ) : (
-              <button
-                disabled
-                className="w-full py-4.5 font-bold rounded-2xl shadow-xl transition-all text-center bg-[#E6B18A]/50 text-[#1A120E]/50 cursor-not-allowed"
-              >
-                Read Online (N/A)
-              </button>
-            )}
+            ) : null}
 
             {book.downloadUrl ? (
               <a
@@ -109,14 +85,7 @@ const BookDetails: React.FC = () => {
               >
                 Download Book
               </a>
-            ) : (
-              <button
-                disabled
-                className="w-full py-4.5 font-bold rounded-2xl border transition-all text-center bg-[#1F1511]/50 text-[#F5EFEA]/50 border-[#3A2A23]/50 cursor-not-allowed"
-              >
-                Download (N/A)
-              </button>
-            )}
+            ) : null}
           </div>
         </div>
 

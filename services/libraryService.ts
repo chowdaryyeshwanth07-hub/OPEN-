@@ -18,6 +18,26 @@ import { handleFirestoreError, OperationType } from '../lib/firestoreUtils.ts';
 
 const COLLECTION_NAME = 'poems';
 
+const normalizeUrl = (url?: string) => {
+  if (!url) return undefined;
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  // If it's just a domain or path, assume https
+  return `https://${trimmed}`;
+};
+
+const normalizeBook = (docId: string, data: any): Book => {
+  return {
+    id: docId as any,
+    ...data,
+    viewUrl: normalizeUrl(data.viewUrl || data.view_url),
+    downloadUrl: normalizeUrl(data.downloadUrl || data.download_url),
+    coverImageUrl: data.coverImageUrl || data.cover_image_url,
+    publishedYear: data.publishedYear || data.published_year,
+  } as Book;
+};
+
 export const libraryService = {
   getAllBooks: async (): Promise<Book[]> => {
     console.log(`Fetching all books from collection: ${COLLECTION_NAME}`);
@@ -25,23 +45,13 @@ export const libraryService = {
       const q = query(collection(db, COLLECTION_NAME));
       const querySnapshot = await getDocs(q);
       console.log(`Found ${querySnapshot.docs.length} documents in ${COLLECTION_NAME}`);
-      const books = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id as any,
-          ...data,
-          viewUrl: data.viewUrl || data.view_url,
-          downloadUrl: data.downloadUrl || data.download_url,
-          coverImageUrl: data.coverImageUrl || data.cover_image_url,
-          publishedYear: data.publishedYear || data.published_year,
-        } as Book;
-      });
+      const books = querySnapshot.docs.map(doc => normalizeBook(doc.id, doc.data()));
       
       // Deduplicate in memory to ensure UI is clean
       const uniqueBooks: Book[] = [];
       const seen = new Set<string>();
       for (const book of books) {
-        const identifier = `${book.title.toLowerCase()}|${book.author.toLowerCase()}`;
+        const identifier = `${book.title.trim().toLowerCase()}|${book.author.trim().toLowerCase()}`;
         if (!seen.has(identifier)) {
           seen.add(identifier);
           uniqueBooks.push(book);
@@ -71,15 +81,7 @@ export const libraryService = {
       const docRef = doc(db, COLLECTION_NAME, id);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        return { 
-          id: docSnap.id as any, 
-          ...data,
-          viewUrl: data.viewUrl || data.view_url,
-          downloadUrl: data.downloadUrl || data.download_url,
-          coverImageUrl: data.coverImageUrl || data.cover_image_url,
-          publishedYear: data.publishedYear || data.published_year,
-        } as Book;
+        return normalizeBook(docSnap.id, docSnap.data());
       }
       return undefined;
     } catch (error) {
@@ -98,14 +100,7 @@ export const libraryService = {
       const data = newDoc.data();
       if (!data) return null;
       
-      return { 
-        id: newDoc.id as any, 
-        ...data,
-        viewUrl: data.viewUrl || data.view_url,
-        downloadUrl: data.downloadUrl || data.download_url,
-        coverImageUrl: data.coverImageUrl || data.cover_image_url,
-        publishedYear: data.publishedYear || data.published_year,
-      } as Book;
+      return normalizeBook(newDoc.id, data);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, COLLECTION_NAME);
       return null;
@@ -115,7 +110,12 @@ export const libraryService = {
   updateBook: async (id: string, updated: Partial<Book>): Promise<boolean> => {
     try {
       const docRef = doc(db, COLLECTION_NAME, id);
-      await updateDoc(docRef, updated);
+      // Normalize URLs if they are being updated
+      const toUpdate = { ...updated };
+      if (toUpdate.viewUrl) toUpdate.viewUrl = normalizeUrl(toUpdate.viewUrl);
+      if (toUpdate.downloadUrl) toUpdate.downloadUrl = normalizeUrl(toUpdate.downloadUrl);
+      
+      await updateDoc(docRef, toUpdate);
       return true;
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `${COLLECTION_NAME}/${id}`);
@@ -140,7 +140,7 @@ export const libraryService = {
       let deletedCount = 0;
 
       for (const book of allBooks) {
-        const identifier = `${book.title.toLowerCase()}|${book.author.toLowerCase()}`;
+        const identifier = `${book.title.trim().toLowerCase()}|${book.author.trim().toLowerCase()}`;
         if (seen.has(identifier)) {
           await libraryService.deleteBook(book.id);
           deletedCount++;
@@ -160,23 +160,13 @@ export const libraryService = {
       let q = query(collection(db, COLLECTION_NAME));
 
       const querySnapshot = await getDocs(q);
-      let books = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id as any,
-          ...data,
-          viewUrl: data.viewUrl || data.view_url,
-          downloadUrl: data.downloadUrl || data.download_url,
-          coverImageUrl: data.coverImageUrl || data.cover_image_url,
-          publishedYear: data.publishedYear || data.published_year,
-        } as Book;
-      });
+      let books = querySnapshot.docs.map(doc => normalizeBook(doc.id, doc.data()));
 
       // Deduplicate in memory to ensure UI is clean
       const uniqueBooks: Book[] = [];
       const seen = new Set<string>();
       for (const book of books) {
-        const identifier = `${book.title.toLowerCase()}|${book.author.toLowerCase()}`;
+        const identifier = `${book.title.trim().toLowerCase()}|${book.author.trim().toLowerCase()}`;
         if (!seen.has(identifier)) {
           seen.add(identifier);
           uniqueBooks.push(book);

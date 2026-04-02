@@ -67,31 +67,41 @@ const BookDetails: React.FC = () => {
              />
           </div>
           <div className="flex flex-col gap-4">
-             <a 
-               href={book.viewUrl || '#'}
-               target="_blank"
-               rel="noopener noreferrer"
-               className={`w-full py-4.5 font-bold rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center ${
-                 book.viewUrl 
-                   ? "bg-[#E6B18A] text-[#1A120E] hover:bg-[#D39A70]" 
-                   : "bg-[#E6B18A]/50 text-[#1A120E]/50 cursor-not-allowed pointer-events-none"
-               }`}
-             >
-                {book.viewUrl ? "Read Online" : "Read Online (N/A)"}
-             </a>
+             {book.viewUrl ? (
+               <a 
+                 href={book.viewUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="w-full py-4.5 font-bold rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center bg-[#E6B18A] text-[#1A120E] hover:bg-[#D39A70]"
+               >
+                  Read Online
+               </a>
+             ) : (
+               <button 
+                 disabled
+                 className="w-full py-4.5 font-bold rounded-2xl shadow-xl transition-all text-center bg-[#E6B18A]/50 text-[#1A120E]/50 cursor-not-allowed"
+               >
+                  Read Online (N/A)
+               </button>
+             )}
 
-             <a 
-               href={book.downloadUrl || '#'}
-               target="_blank"
-               rel="noopener noreferrer"
-               className={`w-full py-4.5 font-bold rounded-2xl border transition-all text-center ${
-                 book.downloadUrl
-                   ? "bg-[#1F1511] text-[#F5EFEA] border-[#3A2A23] hover:bg-[#241814]"
-                   : "bg-[#1F1511]/50 text-[#F5EFEA]/50 border-[#3A2A23]/50 cursor-not-allowed pointer-events-none"
-               }`}
-             >
-                {book.downloadUrl ? "Download Book" : "Download (N/A)"}
-             </a>
+             {book.downloadUrl ? (
+               <a 
+                 href={book.downloadUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="w-full py-4.5 font-bold rounded-2xl border transition-all text-center bg-[#1F1511] text-[#F5EFEA] border-[#3A2A23] hover:bg-[#241814]"
+               >
+                  Download Book
+               </a>
+             ) : (
+               <button 
+                 disabled
+                 className="w-full py-4.5 font-bold rounded-2xl border transition-all text-center bg-[#1F1511]/50 text-[#F5EFEA]/50 border-[#3A2A23]/50 cursor-not-allowed"
+               >
+                  Download (N/A)
+               </button>
+             )}
           </div>
         </div>
 

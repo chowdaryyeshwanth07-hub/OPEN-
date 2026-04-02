@@ -234,12 +234,12 @@ const Admin: React.FC = () => {
       try {
         const { SAMPLE_100_BOOKS } = await import('../sampleBooks.ts');
         const existingBooks = await libraryService.getAllBooks();
-        const existingMap = new Set(existingBooks.map(b => `${b.title.toLowerCase()}|${b.author.toLowerCase()}`));
+        const existingMap = new Set(existingBooks.map(b => `${b.title.trim().toLowerCase()}|${b.author.trim().toLowerCase()}`));
 
         console.log(`Starting seeding of ${SAMPLE_100_BOOKS.length} books...`);
         
         for (const book of SAMPLE_100_BOOKS) {
-          const identifier = `${book.title.toLowerCase()}|${book.author.toLowerCase()}`;
+          const identifier = `${book.title.trim().toLowerCase()}|${book.author.trim().toLowerCase()}`;
           if (existingMap.has(identifier)) {
             skipCount++;
             continue;

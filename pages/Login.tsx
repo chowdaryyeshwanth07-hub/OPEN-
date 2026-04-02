@@ -15,7 +15,18 @@ const Login: React.FC = () => {
       await authService.signInWithGoogle();
       navigate('/');
     } catch (err: any) {
+      console.error('Login error:', err);
       let message = err.message || 'Failed to sign in with Google';
+      
+      // Handle Firebase specific error codes if they are in the message or error object
+      if (message.includes('auth/popup-closed-by-user')) {
+        message = 'The sign-in popup was closed before completion. Please try again and keep the popup open until finished.';
+      } else if (message.includes('auth/popup-blocked')) {
+        message = 'The sign-in popup was blocked by your browser. Please allow popups for this site or open the app in a new tab.';
+      } else if (message.includes('auth/cancelled-popup-request')) {
+        message = 'Only one sign-in popup can be open at a time. Please try again.';
+      }
+
       try {
         const parsed = JSON.parse(message);
         if (parsed.error) {
@@ -68,6 +79,13 @@ const Login: React.FC = () => {
             )}
             <span className="text-lg">Continue with Google</span>
           </button>
+          
+          <div className="bg-[#1A120E] p-4 rounded-xl border border-[#3A2A23]/50">
+            <p className="text-xs text-[#CBB8A9] leading-relaxed text-center">
+              <span className="text-[#E6B18A] font-bold">Trouble signing in?</span><br />
+              If the popup closes immediately or is blocked, please open the app in a new tab using the button in the top right corner.
+            </p>
+          </div>
           
           <p className="text-center text-sm text-[#8C7A6B] pt-4">
             By signing in, you agree to our{' '}

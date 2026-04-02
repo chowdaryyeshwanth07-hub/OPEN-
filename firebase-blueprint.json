@@ -70,7 +70,7 @@
       "schema": "UserProfile",
       "description": "User profiles with roles."
     },
-    "/poems": {
+    "/books": {
       "schema": "Book",
       "description": "Collection of books and poems."
     }

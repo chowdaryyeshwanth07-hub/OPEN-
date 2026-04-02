@@ -6,7 +6,7 @@ service cloud.firestore {
     // Assumed Data Model
     // ===============================================================
     //
-    // Collection: poems
+    // Collection: books
     // Document ID: auto-generated string
     // Fields:
     //   - title: string (required, 1-200 chars)
@@ -86,12 +86,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Poems collection
-    match /poems/{poemId} {
-      // Anyone can read poems (public library)
+    // Books collection
+    match /books/{bookId} {
+      // Anyone can read books (public library)
       allow read: if true;
       
-      // Only admins can create, update, or delete poems
+      // Only admins can create, update, or delete books
       allow create: if isAdmin() && isValidBook(request.resource.data);
       allow update: if isAdmin() && isValidBook(request.resource.data) &&
                       request.resource.data.createdAt == resource.data.createdAt;

@@ -61,23 +61,35 @@ const BookDetails: React.FC = () => {
           </div>
           
           <div className="flex flex-col gap-4">
-            <a 
-              href={book.viewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-4.5 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-[0.98] text-center"
-            >
-              Read Online
-            </a>
+            {book.viewUrl ? (
+              <a 
+                href={book.viewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4.5 bg-[#E6B18A] text-[#1A120E] font-bold rounded-2xl shadow-xl hover:bg-[#D39A70] transition-all transform active:scale-[0.98] text-center cursor-pointer"
+              >
+                Read Online
+              </a>
+            ) : (
+              <div className="w-full py-4.5 bg-[#E6B18A]/20 text-[#CBB8A9] font-bold rounded-2xl border border-[#3A2A23] text-center cursor-not-allowed">
+                Read Online (N/A)
+              </div>
+            )}
 
-            <a 
-              href={book.downloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-4.5 bg-[#1F1511] text-[#F5EFEA] font-bold rounded-2xl border border-[#3A2A23] hover:bg-[#241814] transition-all text-center"
-            >
-              Download Book
-            </a>
+            {book.downloadUrl ? (
+              <a 
+                href={book.downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4.5 bg-[#1F1511] text-[#F5EFEA] font-bold rounded-2xl border border-[#3A2A23] hover:bg-[#241814] transition-all text-center cursor-pointer"
+              >
+                Download Book
+              </a>
+            ) : (
+              <div className="w-full py-4.5 bg-[#1F1511]/40 text-[#8C7A6B] font-bold rounded-2xl border border-[#3A2A23]/50 text-center cursor-not-allowed">
+                Download (N/A)
+              </div>
+            )}
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Edit2, Trash2, Zap, Database, X, Loader2, BookOpen } from 'lucide-react';
+import Modal from '../components/Modal.tsx';
 import { libraryService } from '../services/libraryService.ts';
 import { authService } from '../services/authService.ts';
 import { geminiService } from '../services/geminiService.ts';
@@ -15,6 +16,18 @@ const Admin: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'alert' | 'confirm';
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'alert'
+  });
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -38,8 +51,13 @@ const Admin: React.FC = () => {
       
       const admin = await authService.isAdmin();
       if (!admin) {
-        alert('Access Denied: Admin privileges required.');
-        navigate('/');
+        setModalState({
+          isOpen: true,
+          title: 'Access Denied',
+          message: 'Admin privileges required to access this page.',
+          type: 'alert',
+          onConfirm: () => navigate('/')
+        });
       } else {
         setIsCheckingAuth(false);
         refreshBooks();
@@ -92,18 +110,29 @@ const Admin: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this book?')) {
-      setIsLoading(true);
-      try {
-        await libraryService.deleteBook(id);
-        await refreshBooks();
-      } catch (error) {
-        console.error('Delete failed:', error);
-        alert('Failed to delete book. Check console for details.');
-      } finally {
-        setIsLoading(false);
+    setModalState({
+      isOpen: true,
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this book? This action cannot be undone.',
+      type: 'confirm',
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          await libraryService.deleteBook(id);
+          await refreshBooks();
+        } catch (error) {
+          console.error('Delete failed:', error);
+          setModalState({
+            isOpen: true,
+            title: 'Delete Failed',
+            message: 'Failed to delete book. Check console for details.',
+            type: 'alert'
+          });
+        } finally {
+          setIsLoading(false);
+        }
       }
-    }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,7 +148,12 @@ const Admin: React.FC = () => {
       await refreshBooks();
     } catch (error) {
       console.error('Submit failed:', error);
-      alert('Failed to save book. Check console for details.');
+      setModalState({
+        isOpen: true,
+        title: 'Save Failed',
+        message: 'Failed to save book. Check console for details.',
+        type: 'alert'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +170,12 @@ const Admin: React.FC = () => {
 
   const handleAiAutoFill = async () => {
     if (!formData.title || !formData.author) {
-      alert('Please enter Title and Author first for AI to generate info.');
+      setModalState({
+        isOpen: true,
+        title: 'Missing Information',
+        message: 'Please enter Title and Author first for AI to generate info.',
+        type: 'alert'
+      });
       return;
     }
     setIsLoading(true);
@@ -151,52 +190,82 @@ const Admin: React.FC = () => {
         downloadUrl: result.downloadUrl || prev.downloadUrl
       }));
     } catch (error) {
-      alert('AI Auto-fill failed. Please try manual entry.');
+      setModalState({
+        isOpen: true,
+        title: 'AI Error',
+        message: 'AI Auto-fill failed. Please try manual entry.',
+        type: 'alert'
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSeedDatabase = async () => {
-    if (books.length > 0) {
-      if (!window.confirm('This will add initial books to your library. Continue?')) return;
-    }
-    
-    setIsLoading(true);
-    let successCount = 0;
-    let failCount = 0;
-    
-    try {
-      const { SAMPLE_100_BOOKS } = await import('../sampleBooks.ts');
-      console.log(`Starting seeding of ${SAMPLE_100_BOOKS.length} books...`);
+    const startSeeding = async () => {
+      setIsLoading(true);
+      let successCount = 0;
+      let failCount = 0;
       
-      for (const book of SAMPLE_100_BOOKS) {
-        try {
-          // @ts-ignore - bookData might have extra fields but addBook handles it
-          const { id, createdAt, ...bookData } = book as any;
-          await libraryService.addBook(bookData);
-          successCount++;
-          if (successCount % 10 === 0) {
-            console.log(`Seeded ${successCount} books...`);
+      try {
+        const { SAMPLE_100_BOOKS } = await import('../sampleBooks.ts');
+        console.log(`Starting seeding of ${SAMPLE_100_BOOKS.length} books...`);
+        
+        for (const book of SAMPLE_100_BOOKS) {
+          try {
+            // @ts-ignore - bookData might have extra fields but addBook handles it
+            const { id, createdAt, ...bookData } = book as any;
+            await libraryService.addBook(bookData);
+            successCount++;
+            if (successCount % 10 === 0) {
+              console.log(`Seeded ${successCount} books...`);
+            }
+          } catch (err) {
+            console.error(`Failed to seed book: ${book.title}`, err);
+            failCount++;
           }
-        } catch (err) {
-          console.error(`Failed to seed book: ${book.title}`, err);
-          failCount++;
         }
+        
+        await refreshBooks();
+        
+        if (failCount === 0) {
+          setModalState({
+            isOpen: true,
+            title: 'Seeding Complete',
+            message: `Database seeded with ${successCount} books successfully!`,
+            type: 'alert'
+          });
+        } else {
+          setModalState({
+            isOpen: true,
+            title: 'Seeding Finished',
+            message: `Seeding complete. Success: ${successCount}, Failed: ${failCount}. Check console for details.`,
+            type: 'alert'
+          });
+        }
+      } catch (error) {
+        console.error('Critical seeding error:', error);
+        setModalState({
+          isOpen: true,
+          title: 'Seeding Error',
+          message: 'Seeding failed. Check console for details.',
+          type: 'alert'
+        });
+      } finally {
+        setIsLoading(false);
       }
-      
-      await refreshBooks();
-      
-      if (failCount === 0) {
-        alert(`Database seeded with ${successCount} books successfully!`);
-      } else {
-        alert(`Seeding complete. Success: ${successCount}, Failed: ${failCount}. Check console for details.`);
-      }
-    } catch (error) {
-      console.error('Critical seeding error:', error);
-      alert('Seeding failed. Check console for details.');
-    } finally {
-      setIsLoading(false);
+    };
+
+    if (books.length > 0) {
+      setModalState({
+        isOpen: true,
+        title: 'Confirm Seeding',
+        message: 'This will add initial books to your library. Continue?',
+        type: 'confirm',
+        onConfirm: startSeeding
+      });
+    } else {
+      startSeeding();
     }
   };
 
@@ -476,6 +545,14 @@ const Admin: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+      <Modal 
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        onConfirm={modalState.onConfirm}
+      />
     </div>
   );
 };

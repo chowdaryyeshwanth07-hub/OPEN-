@@ -49,14 +49,17 @@ export const geminiService = {
       const ai = getAI();
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `Generate a book record for "${title}" by ${author}. 
+        contents: `Find real, high-quality links for the book "${title}" by ${author}. 
         Return a JSON object with: 
         - description: A professional book blurb.
         - categories: Array of 2-3 matching literary categories.
         - year: The original publication year as a number.
-        - viewUrl: A URL where the book can be read online (e.g. Project Gutenberg or similar public domain source).
-        - downloadUrl: A direct download URL for the book if available (e.g. PDF/EPUB from public domain sources).`,
+        - viewUrl: A REAL URL where the book can be read online (e.g. Project Gutenberg, Archive.org, or a reputable library site).
+        - downloadUrl: A REAL direct download URL for the book if available (e.g. PDF/EPUB from public domain sources).
+        
+        Use Google Search to find the most accurate and functional links.`,
         config: {
+          tools: [{ googleSearch: {} }],
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,

@@ -15,8 +15,8 @@ const Home: React.FC = () => {
     const fetchFeatured = async () => {
       const all = await libraryService.getAllBooks();
       const sorted = [...all].sort((a, b) => {
-        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : new Date(a.createdAt).getTime();
-        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : new Date(b.createdAt).getTime();
+        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
         return dateB - dateA;
       }).slice(0, 6);
       setFeaturedBooks(sorted);

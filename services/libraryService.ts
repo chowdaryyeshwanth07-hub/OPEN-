@@ -16,17 +16,26 @@ import {
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../lib/firestoreUtils.ts';
 
-const COLLECTION_NAME = 'poems';
+const COLLECTION_NAME = 'books';
 
 export const libraryService = {
   getAllBooks: async (): Promise<Book[]> => {
     try {
-      const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
+      const q = query(collection(db, COLLECTION_NAME));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
+      const books = querySnapshot.docs.map(doc => ({
         id: doc.id as any,
         ...doc.data()
       })) as Book[];
+
+      // Sort in memory to be more robust if some docs lack createdAt
+      books.sort((a, b) => {
+        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        return dateB - dateA;
+      });
+
+      return books;
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
       return [];
@@ -106,8 +115,8 @@ export const libraryService = {
       }
 
       books.sort((a, b) => {
-        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : new Date(a.createdAt).getTime();
-        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : new Date(b.createdAt).getTime();
+        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
         
         switch (sort) {
           case SortOption.NEWEST: return dateB - dateA;

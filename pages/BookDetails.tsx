@@ -13,16 +13,9 @@ const BookDetails: React.FC = () => {
   useEffect(() => {
     if (id) {
       const fetchBook = async () => {
-        try {
-          const found = await libraryService.getBook(id);
-          if (!found) {
-            console.error(`Book with ID ${id} not found`);
-          } else {
-            console.log('Fetched book data:', found); // debug: see what URLs are coming
-            setBook(found);
-          }
-        } catch (err) {
-          console.error('Error fetching book:', err);
+        const found = await libraryService.getBook(id);
+        if (found) {
+          setBook(found); // Use original URLs from database/API
         }
       };
       fetchBook();
@@ -32,14 +25,9 @@ const BookDetails: React.FC = () => {
   const handleGenerateSummary = async () => {
     if (!book) return;
     setLoadingSummary(true);
-    try {
-      const summary = await geminiService.getBookSummary(book);
-      setAiSummary(summary);
-    } catch (err) {
-      console.error('Error generating AI summary:', err);
-    } finally {
-      setLoadingSummary(false);
-    }
+    const summary = await geminiService.getBookSummary(book);
+    setAiSummary(summary);
+    setLoadingSummary(false);
   };
 
   if (!book) {
@@ -52,10 +40,6 @@ const BookDetails: React.FC = () => {
       </div>
     );
   }
-
-  // Debug missing URLs
-  if (!book.viewUrl) console.warn('viewUrl missing for book:', book.id);
-  if (!book.downloadUrl) console.warn('downloadUrl missing for book:', book.id);
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-fadeIn pb-20">
@@ -81,24 +65,27 @@ const BookDetails: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-4">
-            {/* Always render buttons, even if URL is missing */}
-            <a
-              href={book.viewUrl || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-4.5 font-bold rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center bg-[#E6B18A] text-[#1A120E] hover:bg-[#D39A70]"
-            >
-              Read Online
-            </a>
+            {book.viewUrl ? (
+              <a
+                href={book.viewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4.5 font-bold rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center bg-[#E6B18A] text-[#1A120E] hover:bg-[#D39A70]"
+              >
+                Read Online
+              </a>
+            ) : null}
 
-            <a
-              href={book.downloadUrl || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-4.5 font-bold rounded-2xl border transition-all text-center bg-[#1F1511] text-[#F5EFEA] border-[#3A2A23] hover:bg-[#241814]"
-            >
-              Download Book
-            </a>
+            {book.downloadUrl ? (
+              <a
+                href={book.downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4.5 font-bold rounded-2xl border transition-all text-center bg-[#1F1511] text-[#F5EFEA] border-[#3A2A23] hover:bg-[#241814]"
+              >
+                Download Book
+              </a>
+            ) : null}
           </div>
         </div>
 
